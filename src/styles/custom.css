@@ -53,6 +53,81 @@
 
   /* Blur effect for nav */
   --sl-nav-backdrop-filter: blur(12px);
+
+  /* Starlight's five semantic hues (blue/purple/green/orange/red) were left
+     unmapped by the initial retheme, so asides and badges still rendered
+     Starlight's stock palette — a blue "Note" aside, and worse, a genuinely
+     purple "Live" badge on the Playground link, a colour that appears
+     nowhere else in this system and clashes with rust. Blue, green and red
+     map straight onto this system's info/success/danger verdict hues.
+     Orange maps to the *yellow* warning family, not rust: DESIGN.md pushes
+     warning to a true yellow (hue 48) specifically so it can't be misread
+     as "the accent, slightly off", and routing Caution asides to rust would
+     do exactly that. Purple is the one hue that becomes rust — a Tip aside
+     (and the `variant: tip` badge Starlight renders for that "Live" link)
+     is the one place in docs prose where the accent legitimately earns its
+     keep (DESIGN.md §2, rule 1: at most one orange element per region, and
+     a Tip is that region's one).
+
+     Each triple keeps Starlight's own dark-mode convention (see
+     node_modules/@astrojs/starlight/style/props.css): `-low` is a dark,
+     translucent tint that reads as background, the bare name is the
+     border/rule colour, and `-high` is the brightest, readable-on-dark
+     shade used for text and icons. For blue/green/orange/red we only have
+     two calibrated steps per hue in tokens.css (400 "text on dark", 700
+     "fill"), so `-low` is derived by tinting the page with a translucent
+     wash of the 700 fill — the same `hsl(var(--x) / alpha)` idiom the
+     shadow tokens already use — rather than inventing a third hardcoded
+     hex nowhere else in the system. */
+  --sl-color-blue-low: hsl(var(--ak-blue-700) / 0.16);
+  --sl-color-blue: hsl(var(--ak-blue-700));
+  --sl-color-blue-high: hsl(var(--ak-blue-400));
+
+  --sl-color-green-low: hsl(var(--ak-green-700) / 0.16);
+  --sl-color-green: hsl(var(--ak-green-700));
+  --sl-color-green-high: hsl(var(--ak-green-400));
+
+  --sl-color-orange-low: hsl(var(--ak-yellow-700) / 0.16);
+  --sl-color-orange: hsl(var(--ak-yellow-700));
+  --sl-color-orange-high: hsl(var(--ak-yellow-400));
+
+  --sl-color-red-low: hsl(var(--ak-rose-700) / 0.16);
+  --sl-color-red: hsl(var(--ak-rose-700));
+  --sl-color-red-high: hsl(var(--ak-rose-400));
+
+  /* Purple -> rust uses the rust ramp's own named roles instead of a derived
+     tint, because DESIGN.md already names one of each: rust-950 is already
+     "the tinted ground behind accent text", rust-500 is already named for
+     "icons, focus ring, accent rules" — exactly what an aside's left-hand
+     rule and a badge's border are — and rust-400 is already named "rust as
+     text", which is exactly the job of an aside's title and the Tip badge's
+     label. */
+  --sl-color-purple-low: hsl(var(--ak-rust-950));
+  --sl-color-purple: hsl(var(--ak-rust-500));
+  --sl-color-purple-high: hsl(var(--ak-rust-400));
+
+  /* Starlight's own grey scale (used for borders and secondary text across
+     Card, LinkCard, FileTree, Search, Pagination, the table of contents...)
+     is a blue-tinted grey at hue 224, independent of the accent trio above —
+     a second, unrelated colour decision sitting inside a page whose ground
+     is supposed to be neutral zinc. Mapped onto the neutral ramp in the same
+     order Starlight's dark-mode scale uses (gray-1 lightest, gray-6
+     darkest): gray-2 lands on the same step as --muted-foreground, which is
+     no accident — gray-2 is what Starlight's own --sl-color-text derives
+     from — and gray-5/gray-6 land on the same steps already used for
+     --input/hairline-light and --border/hairline, so borders drawn by
+     built-in components read as the same hairline already used everywhere
+     else. Starlight's dark-mode scale has no gray-7 (only its light theme
+     and print stylesheet define one); leaving it unset here preserves that
+     same fallback (a couple of components reference it as
+     `var(--sl-color-gray-7, var(--sl-color-gray-6))`, which is exactly the
+     graceful-degradation Starlight itself relies on). */
+  --sl-color-gray-1: hsl(var(--ak-neutral-200));
+  --sl-color-gray-2: hsl(var(--ak-neutral-400));
+  --sl-color-gray-3: hsl(var(--ak-neutral-500));
+  --sl-color-gray-4: hsl(var(--ak-neutral-600));
+  --sl-color-gray-5: hsl(var(--ak-neutral-700));
+  --sl-color-gray-6: hsl(var(--ak-neutral-800));
 }
 
 /* Base text readability */
@@ -107,4 +182,49 @@ starlight-tabs {
 .tablist-wrapper {
   background-color: hsl(var(--card));
   border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+/* Starlight's own [aria-current=page] rule fills the active sidebar item
+   with --sl-color-text-accent, which this theme maps to --foreground
+   (#fafafa) for heading emphasis. That makes the current nav item a
+   near-white pill with near-black text — the single loudest thing in the
+   sidebar, for a state that should read as "you are here", not "look at
+   me". --sl-color-text-accent itself can't be the fix: it also drives
+   headings, the skiplink and Search's highlighted result, and bending it to
+   suit the sidebar would break all three. This is scoped to
+   .sidebar-content instead, which is enough to win outright: Starlight's
+   own rule (in SidebarSublist.astro) lives inside `@layer starlight.core`
+   and is wrapped in Astro's scoping `:where(...)`, so it carries zero
+   specificity — this plain, unlayered class selector beats it regardless,
+   confirmed against the built page's computed styles. Fill is --primary
+   (rust-700) with --primary-foreground text, 5.6:1 per DESIGN.md §2. */
+.sidebar-content [aria-current='page'] {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+}
+
+/* The right-hand "On this page" outline uses aria-current too, but it isn't
+   a place you land on — it's a live reading position that walks down the
+   page as you scroll, so a filled pill there would be a second loud thing
+   chasing the sidebar's for attention. Rust as plain text says "you're here"
+   without competing for the one-orange-thing-per-region budget (DESIGN.md
+   §2, rule 1) the sidebar pill above just spent. */
+.right-sidebar-panel a[aria-current='true'],
+mobile-starlight-toc a[aria-current='true'] {
+  color: hsl(var(--primary-accent));
+}
+
+/* --sl-color-text-accent also drives Starlight's in-content link colour, so
+   prose links were rendering --foreground white rather than rust. A link is
+   exactly the "the orange *is* the text" case --primary-accent exists for
+   (DESIGN.md §2), so it gets its own rule rather than a change to
+   --sl-color-text-accent. Both the base colour and the :hover state need an
+   explicit override here: Starlight's own hover rule is layered, so an
+   unlayered override of only the base colour would beat the hover rule too
+   and the link would stop changing colour on hover entirely. */
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: hsl(var(--primary-accent));
+}
+.sl-markdown-content a:hover:not(:where(.not-content *)) {
+  color: hsl(var(--ak-rust-300));
 }
