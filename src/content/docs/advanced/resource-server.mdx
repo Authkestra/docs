@@ -18,10 +18,10 @@ Like the OP Server, the Resource Server is an advanced component and is not incl
 
 ```toml
 [dependencies]
-authkestra-resource = "0.7"
-authkestra-axum = { version = "0.7", features = ["resource"] }
+authkestra-resource = "0.9"
+authkestra-axum = { version = "0.9", features = ["resource"] }
 # Or if using Actix:
-# authkestra-actix = { version = "0.7", features = ["resource"] }
+# authkestra-actix = { version = "0.9", features = ["resource"] }
 ```
 
 ### TLS Backend Selection
@@ -30,7 +30,7 @@ Outbound HTTP requests for JWKS discovery require a TLS backend. Authkestra enab
 
 ```toml
 [dependencies]
-authkestra-resource = { version = "0.7", default-features = false, features = ["rustls-no-provider"] }
+authkestra-resource = { version = "0.9", default-features = false, features = ["rustls-no-provider"] }
 ```
 
 ## Building with Authkestra Guard

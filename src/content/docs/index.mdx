@@ -1,40 +1,51 @@
 ---
-title: Welcome to Authkestra
-description: The modular, framework-agnostic authentication orchestration system for Rust.
-template: splash
-hero:
-  tagline: A modular, framework-agnostic authentication orchestration system designed to be idiomatic to Rust, emphasizing explicit control flow, strong typing, and composability.
-  actions:
-    - text: Quickstart Guide
-      link: /guides/quickstart/
-      icon: right-arrow
-    - text: Try the Playground
-      link: https://play.authkestra.com
-      icon: rocket
-      variant: secondary
-    - text: View on GitHub
-      link: https://github.com/marcjazz/authkestra
-      icon: external
-      variant: minimal
+title: Introduction
+description: What Authkestra is, how it's put together, and where to go next.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-## Why Authkestra?
+Authkestra is an embedded identity engine for Rust: authentication and authorization logic that lives inside your application rather than a separate service you run alongside it. The core, `authkestra-engine`, is pure Rust with no web framework baked in — it defines the traits (`Provider`, `AuthMethod`, `Flow`, `SessionStore`, `KvStore`) and the `Engine` orchestrator built with a typestate builder, so a misconfigured stack fails to compile instead of failing at runtime.
 
-<CardGrid stagger>
-	<Card title="Compile-Time Safety" icon="approve-check-circle">
-		Authkestra utilizes the **Typestate Builder Pattern**. Misconfigurations become compile-time errors rather than runtime surprises.
-	</Card>
-	<Card title="Stateless OAuth" icon="rocket">
-		OAuth `state` and `nonce` are stored securely in encrypted cookies—never in your database—keeping your architecture horizontally scalable.
-	</Card>
-	<Card title="Flexible Chaining" icon="setting">
-		Chain multiple authentication strategies (Token, Session, Basic, Custom) seamlessly together in the Engine to build complex auth flows with ease.
-	</Card>
-	<Card title="Framework & Database Agnostic" icon="puzzle">
-		Pure Rust logic powers the engine. Integrations for **Axum** and **Actix-web** are isolated adapters, and data access is strictly defined via simple `SessionStore` traits, never enforcing schemas.
-	</Card>
+Framework support is added through thin adapter crates — `authkestra-axum` and `authkestra-actix` — that translate the engine's types into extractors and middleware for each framework. Everything the engine needs to persist (sessions, OAuth client state, OP tokens) is defined behind storage traits rather than a fixed schema, so you bring your own database and your own user table; Authkestra doesn't have one.
+
+On top of that core, `authkestra-providers` and `authkestra-oidc` supply concrete OAuth2/OIDC providers, and `authkestra-op` lets you run your own OpenID Connect Provider instead of only consuming one.
+
+## Where to start
+
+<CardGrid>
+	<LinkCard
+		title="Quickstart"
+		description="Get a working GitHub OAuth2 login running end to end."
+		href="/guides/quickstart/"
+	/>
+	<LinkCard
+		title="Framework Integration"
+		description="Wire the engine into Axum or Actix-web."
+		href="/guides/framework-integration/"
+	/>
+	<LinkCard
+		title="Authentication Flows"
+		description="Add a specific method: OAuth2, OIDC, passkeys, TOTP, device flow, and more."
+		href="/providers/oauth2/"
+	/>
+	<LinkCard
+		title="Building Servers"
+		description="Run a resource server or your own OpenID Provider (OP)."
+		href="/advanced/resource-server/"
+	/>
+	<LinkCard
+		title="Data & Storage"
+		description="Choose and implement the stores the engine reads and writes."
+		href="/storage/overview/"
+	/>
+	<LinkCard
+		title="Why Authkestra?"
+		description="The design principles behind the typestate builder, stateless OAuth, and the trait-based storage model."
+		href="/concepts/architecture/"
+	/>
 </CardGrid>
 
+## Try it, read it
 
+Try the flows in a live sandbox at [play.authkestra.com](https://play.authkestra.com), or browse the source and open an issue on [GitHub](https://github.com/marcjazz/authkestra).

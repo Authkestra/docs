@@ -15,10 +15,10 @@ Because OP Servers are an advanced use case, the OP logic is not included in the
 
 ```toml
 [dependencies]
-authkestra-op = "0.7"
-authkestra-axum = { version = "0.7", features = ["op"] }
+authkestra-op = "0.9"
+authkestra-axum = { version = "0.9", features = ["op"] }
 # Or if using Actix:
-# authkestra-actix = { version = "0.7", features = ["op"] }
+# authkestra-actix = { version = "0.9", features = ["op"] }
 ```
 
 ## The OpStore Interface
