@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://authkestra.com',
+	site: 'https://docs.authkestra.com',
 
 	integrations: [
 		starlight({
@@ -24,7 +24,6 @@ export default defineConfig({
 					label: 'Welcome',
 					items: [
 						{ label: 'Why Authkestra?', slug: 'concepts/architecture' },
-						{ label: 'Comparison', slug: 'concepts/comparison' },
 					],
 				},
 				{
