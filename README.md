@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/mark-on-dark.svg">
+  <img src=".github/assets/mark-on-light.svg" alt="Authkestra" width="56" height="56">
+</picture>
+
 # Authkestra documentation site
 
 The source for <https://docs.authkestra.com>, built with [Astro](https://astro.build) and

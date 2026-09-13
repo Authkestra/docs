@@ -9,6 +9,19 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Authkestra',
+			/*
+			  The mark sits beside the title rather than replacing it: at the 24px
+			  Starlight renders it, an A on its own is not a name. `replacesTitle`
+			  would also drop the only text label in the header.
+
+			  It is the explicit-ink copy, not the `currentColor` one: Starlight
+			  emits the logo as an `<img>`, and `currentColor` inside an `<img>`
+			  resolves to black — which on this ground is an invisible mark.
+			*/
+			logo: { src: './src/assets/logo.svg' },
+			head: [
+				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
+			],
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/marcjazz/authkestra' }],
 			customCss: [
 				'./src/styles/custom.css',
