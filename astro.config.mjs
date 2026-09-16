@@ -78,6 +78,14 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Authorization & Continuous Trust',
+					badge: { text: 'Preview', variant: 'caution' },
+					items: [
+						{ label: 'Policy Engine (Cedar)', slug: 'advanced/policy-engine' },
+						{ label: 'Continuous Access Evaluation', slug: 'advanced/continuous-access-evaluation' },
+					],
+				},
+				{
 					label: 'Core Concepts',
 					items: [
 						{ label: 'Typestate Builder Pattern', slug: 'concepts/typestate-builder' },
