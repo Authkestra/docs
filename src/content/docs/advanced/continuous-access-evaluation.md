@@ -46,19 +46,11 @@ Not implemented yet:
 The three gaps are tracked in
 [authkestra#25](https://github.com/marcjazz/authkestra/issues/25).
 
-:::note[Not published yet]
-`authkestra-ssf` does not exist in a released version. The snippet below names the release it is
-expected to land in; until then it is reachable only from a git dependency on the branch in
-[authkestra#309](https://github.com/marcjazz/authkestra/pull/309). What is described here is the
-*receiving* half — validating signals. Acting on them (attenuating a session, refusing an
-invalidated token) is not implemented.
-:::
-
 ## Setting up a receiver
 
 ```toml
 [dependencies]
-authkestra-ssf = "0.12"
+authkestra-ssf = "0.11"
 jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 ```
 

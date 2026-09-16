@@ -19,17 +19,10 @@ review, diff and reload, instead of in `if role == "admin"` branches scattered a
 
 ```toml
 [dependencies]
-authkestra = { version = "0.12", features = ["policy"] }
+authkestra = { version = "0.11", features = ["policy"] }
 # or the crate on its own:
-authkestra-policy = "0.12"
+authkestra-policy = "0.11"
 ```
-
-:::note[Not published yet]
-Neither the `policy` feature nor `authkestra-policy` exists in a released version. The snippet
-above names the release they are expected to land in; until then the crate is reachable only
-from a git dependency on the branch in
-[authkestra#310](https://github.com/marcjazz/authkestra/pull/310).
-:::
 
 ## The one rule: the engine never touches your database
 
