@@ -11,7 +11,7 @@ To use Passkeys, you must first enable the `webauthn` feature in your `Cargo.tom
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.9", features = ["webauthn"] }
+authkestra-engine = { version = "0.13", features = ["webauthn"] }
 ```
 
 ## Configuration
