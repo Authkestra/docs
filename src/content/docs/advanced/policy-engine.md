@@ -19,7 +19,7 @@ review, diff and reload, instead of in `if role == "admin"` branches scattered a
 
 ```toml
 [dependencies]
-authkestra = { version = "0.11", features = ["policy"] }
+authkestra = { version = "0.13", features = ["policy"] }
 # or the crate on its own:
 authkestra-policy = "0.11"
 ```

@@ -19,7 +19,7 @@ To use it, add the `authkestra-store-sqlx` crate and enable the feature for the 
 
 ```toml
 [dependencies]
-authkestra-store-sqlx = { version = "0.9", features = ["postgres"] }
+authkestra-store-sqlx = { version = "0.13", features = ["postgres"] }
 # or mysql, sqlite
 ```
 
