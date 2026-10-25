@@ -11,7 +11,7 @@ To use TOTP, enable the `totp` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.13", features = ["totp"] }
+authkestra = { version = "0.13", features = ["totp"] }
 ```
 
 ## Configuration
@@ -38,14 +38,20 @@ step-up-only behaviour described here.
 
 By registering it this way, the Engine will automatically block any attempt to use TOTP directly for primary authentication (enforcing that it can only be submitted in an `MfaChallenge` after a primary method like a password is authenticated).
 
-## Registering a Device
+## Registering a Device (Re-Proof Gated)
 
-To enroll a user, keep a reference to your `TotpAuthMethod` and call `register_totp`. It automatically generates a new base32 secret and an `otpauth://` provisioning URI. The secret is saved to the store internally.
+To enroll a user, keep a reference to your `TotpAuthMethod` and call `register_totp`. Like Passkeys and Recovery Codes, TOTP enrolment is gated by [`ReproofRequirement`](/providers/passwordless/#re-proof-gating-reproofrequirement) so a stale session cannot silently enrol a second factor, and the account ID is taken directly from `identity.external_id`:
 
 ```rust
+use authkestra_engine::auth::{AuthMethod, ReproofRequirement};
+
+let gate = ReproofRequirement::new(300)
+    .require_step_up(totp_method.has_enrolled(&session.identity.external_id).await?);
+
 let (secret_b32, uri) = totp_method.register_totp(
-    "user_123", // user ID
-    "Authkestra", // Issuer (shows in app)
+    &session.identity,  // Authenticated identity (provides external_id + auth_time)
+    &gate,              // Freshness + step-up gate
+    "Authkestra",       // Issuer (shows in authenticator app)
     "alice@example.com" // Account name
 ).await?;
 ```

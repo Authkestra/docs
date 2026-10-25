@@ -45,6 +45,7 @@ export default defineConfig({
 						{ label: 'Quickstart', slug: 'guides/quickstart' },
 						{ label: 'Framework Integration', slug: 'guides/framework-integration' },
 						{ label: 'Wired Endpoints', slug: 'guides/wired-endpoints' },
+						{ label: 'AI Agents & MCP', slug: 'guides/ai-agents', badge: { text: 'New', variant: 'tip' } },
 					],
 				},
 				{

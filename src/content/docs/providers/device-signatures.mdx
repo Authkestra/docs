@@ -18,10 +18,9 @@ Add the `authkestra-devsig` crate to your dependencies:
 
 ```toml
 [dependencies]
-authkestra-devsig = "0.9"
-# ...plus the `devsig` feature on whichever adapter you use:
-authkestra-axum = { version = "0.13", features = ["devsig"] }
-# authkestra-actix = { version = "0.13", features = ["devsig"] }
+authkestra = { version = "0.13", features = ["axum", "devsig"] }
+# Or with Actix:
+# authkestra = { version = "0.13", features = ["actix", "devsig"] }
 ```
 
 ## How to use `authkestra-devsig`

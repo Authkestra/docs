@@ -21,7 +21,7 @@ review, diff and reload, instead of in `if role == "admin"` branches scattered a
 [dependencies]
 authkestra = { version = "0.13", features = ["policy"] }
 # or the crate on its own:
-authkestra-policy = "0.11"
+authkestra-policy = "0.13"
 ```
 
 ## The one rule: the engine never touches your database
