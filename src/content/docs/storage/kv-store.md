@@ -7,15 +7,11 @@ KV Stores (Key-Value) are the primary way `authkestra-engine` persists session d
 
 ## Available Implementations
 
-Authkestra includes a few generic KV stores. The store implementations and their feature flags
-live on `authkestra-engine` — the `authkestra` facade does not re-export `memory`/`redis`
-as features of its own, so depend on the engine directly for these:
+Authkestra includes built-in generic KV stores (`memory` and `redis`), forwarded directly through the `authkestra` facade crate:
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "session"] }
-# Example: Using the Redis KV store
-authkestra-engine = { version = "0.13", features = ["session", "redis"] }
+authkestra = { version = "0.13", features = ["axum", "redis"] }
 ```
 
 ### 1. Memory Store (`memory`)

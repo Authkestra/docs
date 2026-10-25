@@ -7,11 +7,11 @@ Passkeys provide a highly secure, phishing-resistant alternative to passwords by
 
 ## Enabling Passkeys
 
-To use Passkeys, you must first enable the `webauthn` feature in your `Cargo.toml`:
+To use Passkeys, enable the `webauthn` feature in your `Cargo.toml` (either on the `authkestra` facade or directly on `authkestra-engine`):
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.13", features = ["webauthn"] }
+authkestra = { version = "0.13", features = ["webauthn"] }
 ```
 
 ## Configuration
@@ -47,21 +47,26 @@ A runnable example combining passkeys with TOTP lives in the repository:
 cargo run -p authkestra --example axum_mfa_server --all-features
 ```
 
-## Registration Ceremony
+## Registration Ceremony (Re-Proof Gated)
 
-Registration is also a two-step ceremony, driven directly on the `WebAuthnAuthMethod`:
+Enrolling a passkey is a security-posture change, so `start_register` requires an authenticated `Identity` and a [`ReproofRequirement`](/providers/passwordless/#re-proof-gating-reproofrequirement) (introduced in `0.13`) rather than a bare user ID string. This prevents a stale or stolen session from silently enrolling an attacker's passkey, and binds the subject into the returned `PasskeyEnrolment` state so `finish_register` cannot be tricked into filing the credential under a different account:
 
 ```rust
-use authkestra_engine::auth::webauthn::WebAuthnAuthMethod;
+use authkestra_engine::auth::{webauthn::WebAuthnAuthMethod, AuthMethod, ReproofRequirement};
 
 let method = WebAuthnAuthMethod::new(Arc::new(webauthn), my_store);
 
+// Require authentication within the last 300 seconds, plus step-up if a passkey is already enrolled
+let gate = ReproofRequirement::new(300)
+    .require_step_up(method.has_enrolled(&session.identity.external_id).await?);
+
 // 1. Start: return `challenge` to the browser for `navigator.credentials.create()`,
-//    and stash `reg_state` in the user's session.
-let (challenge, reg_state) = method.start_register("user_123", "ada")?;
+//    and stash `enrolment` (`PasskeyEnrolment`) in server-side session state.
+let (challenge, enrolment) = method.start_register(&session.identity, &gate, "ada")?;
 
 // 2. Finish: verify the attestation and persist the passkey via the CredentialStore.
-let passkey = method.finish_register("user_123", reg_response, reg_state).await?;
+//    `enrolment` already carries the verified subject, so no user_id argument is passed here.
+let passkey = method.finish_register(enrolment, reg_response).await?;
 ```
 
 ### User handles
@@ -71,7 +76,7 @@ credential and returns it as `response.userHandle` on every later assertion, whi
 discoverable ("usernameless") sign-in able to resolve an account. It must be stable for the lifetime
 of the account and map back to exactly one user.
 
-`start_register` derives the handle from `user_id` with `derive_user_handle`:
+`start_register` derives the handle from `identity.external_id` with `derive_user_handle`:
 
 - a `user_id` that already parses as a UUID is used verbatim;
 - anything else (CUID, ULID, prefixed id, integer) is hashed into a **UUIDv5** over the documented
@@ -86,9 +91,9 @@ since `start_register` passes `username` for both — use `start_register_with_h
 ```rust
 use authkestra_engine::auth::webauthn::derive_user_handle;
 
-let handle = derive_user_handle("user_123"); // or your own stable handle
-let (challenge, reg_state) =
-    method.start_register_with_handle(handle, "ada", "Ada Lovelace")?;
+let handle = derive_user_handle(&session.identity.external_id); // or your own stable handle
+let (challenge, enrolment) =
+    method.start_register_with_handle(&session.identity, &gate, handle, "ada", "Ada Lovelace")?;
 ```
 
 ## Authentication Ceremony

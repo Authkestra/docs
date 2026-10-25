@@ -15,7 +15,7 @@ engine's own types, so depend on it directly (the `authkestra` facade re-exports
 
 ```toml
 [dependencies]
-authkestra-engine = "0.9"
+authkestra-engine = "0.13"
 tokio = { version = "1", features = ["full"] }
 ```
 

@@ -16,8 +16,7 @@ Add the `authkestra` facade crate to your `Cargo.toml`. The facade re-exports al
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "session", "github"] }
-authkestra-engine = { version = "0.13", features = ["session", "memory"] }
+authkestra = { version = "0.13", features = ["axum", "memory", "github"] }
 tower-cookies = "0.11"
 tokio = { version = "1", features = ["full"] }
 ```
@@ -27,8 +26,7 @@ tokio = { version = "1", features = ["full"] }
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["actix", "session", "github"] }
-authkestra-engine = { version = "0.13", features = ["session", "memory"] }
+authkestra = { version = "0.13", features = ["actix", "macros", "memory", "github"] }
 actix-web = "4"
 ```
 
@@ -40,10 +38,10 @@ actix-web = "4"
 The core logic of Authkestra is identical regardless of which web framework you choose. First, initialize the Identity Provider (`GithubProvider`), wrap it in an `OAuth2Flow`, and construct the `Engine` using the Typestate Builder Pattern (`Authkestra::builder()`).
 
 ```rust
-use authkestra::Authkestra;
+use authkestra::core::{OAuth2Flow, SessionStore};
 use authkestra::providers::github::GithubProvider;
-use authkestra_engine::store::memory::MemoryStore;
-use authkestra_engine::{OAuth2Flow, SessionStore};
+use authkestra::store::memory::MemoryStore;
+use authkestra::Authkestra;
 use std::sync::Arc;
 
 // 1. Initialize the GitHub Provider
@@ -78,16 +76,16 @@ Once the engine is built, integrate it into your web framework's routing layer. 
 
 ```rust
 use authkestra::axum::{AxumExt, AxumState};
-use authkestra::core::AkWebAppEngine;
+use authkestra::core::{AkWebAppEngine, OAuth2Flow, SessionStore};
 use authkestra::providers::github::GithubProvider;
+use authkestra::store::memory::MemoryStore;
 use authkestra::Authkestra;
-use authkestra_engine::store::memory::MemoryStore;
-use authkestra_engine::{OAuth2Flow, SessionStore};
 use axum::Router;
 use std::sync::Arc;
 use tower_cookies::CookieManagerLayer;
 
 #[derive(Clone, AxumState)]
+#[authkestra(crate = ::authkestra::axum)]
 struct AppState {
     #[authkestra(engine)]
     auth: AkWebAppEngine,
@@ -132,14 +130,14 @@ cargo run -p authkestra --example axum_oauth2_github --all-features
 ```rust
 use actix_web::{web, App, HttpServer};
 use authkestra::actix::{ActixExt, ActixState};
-use authkestra::core::AkWebAppEngine;
+use authkestra::core::{AkWebAppEngine, OAuth2Flow, SessionStore};
 use authkestra::providers::github::GithubProvider;
+use authkestra::store::memory::MemoryStore;
 use authkestra::Authkestra;
-use authkestra_engine::store::memory::MemoryStore;
-use authkestra_engine::{OAuth2Flow, SessionStore};
 use std::sync::Arc;
 
 #[derive(Clone, ActixState)]
+#[authkestra(crate = ::authkestra::actix)]
 struct AppState {
     #[authkestra(engine)]
     auth: AkWebAppEngine,

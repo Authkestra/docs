@@ -50,7 +50,7 @@ The three gaps are tracked in
 
 ```toml
 [dependencies]
-authkestra-ssf = "0.11"
+authkestra-ssf = "0.13"
 jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 ```
 

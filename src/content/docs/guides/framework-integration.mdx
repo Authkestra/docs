@@ -15,7 +15,7 @@ Ensure you have enabled the correct web framework feature on the `authkestra` cr
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "session"] }
+authkestra = { version = "0.13", features = ["axum", "memory"] }
 ```
 
   </TabItem>
@@ -23,7 +23,7 @@ authkestra = { version = "0.13", features = ["axum", "session"] }
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["actix", "session"] }
+authkestra = { version = "0.13", features = ["actix", "macros", "memory"] }
 ```
 
   </TabItem>
@@ -173,6 +173,7 @@ use axum::Router;
 use tower_cookies::CookieManagerLayer;
 
 #[derive(Clone, AxumState)]
+#[authkestra(crate = ::authkestra::axum)]
 struct AppState {
     #[authkestra(engine)]
     auth: AkWebAppEngine,
@@ -198,6 +199,7 @@ use authkestra::actix::{ActixExt, ActixState};
 use authkestra::core::AkWebAppEngine;
 
 #[derive(Clone, ActixState)]
+#[authkestra(crate = ::authkestra::actix)]
 struct AppState {
     #[authkestra(engine)]
     auth: AkWebAppEngine,
