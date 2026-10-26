@@ -3,81 +3,114 @@
   <img src=".github/assets/mark-on-light.svg" alt="Authkestra" width="56" height="56">
 </picture>
 
-# Authkestra documentation site
+# Authkestra Documentation Site (`docs.authkestra.com`)
 
-The source for <https://docs.authkestra.com>, built with [Astro](https://astro.build) and
-[Starlight](https://starlight.astro.build).
+[![Documentation](https://img.shields.io/website?url=https%3A%2F%2Fdocs.authkestra.com&label=docs.authkestra.com&logo=astro&color=e85d2f)](https://docs.authkestra.com)
+[![Landing Page](https://img.shields.io/badge/landing-authkestra.com-f4845f)](https://authkestra.com)
+[![crates.io](https://img.shields.io/crates/v/authkestra.svg?color=ce422b)](https://crates.io/crates/authkestra)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](https://github.com/Authkestra/authkestra)
+[![Agent Skills](https://img.shields.io/badge/agent%20skills-Authkestra%2Fskills-informational)](https://github.com/Authkestra/skills)
+[![Single-File Corpus](https://img.shields.io/badge/corpus-llms--full.txt-orange)](https://docs.authkestra.com/llms-full.txt)
 
-This repo used to live at `website/` inside the `marcjazz/authkestra` monorepo. It was split out
-with `git subtree split` so the docs could deploy on their own subdomain (`docs.authkestra.com`,
-separate from the landing page at `authkestra.com`) without dragging the Rust workspace along —
-the commit history above this point is the real history of that directory, not a fresh start.
+The official documentation site for **[Authkestra](https://authkestra.com)** — The Compile-Time Safe Identity & AI Agent Authorization Engine for Rust.
+
+Built with [Astro](https://astro.build) and [Starlight](https://starlight.astro.build), deploying to **<https://docs.authkestra.com>**.
+
+---
+
+## 📖 What This Site Covers
+
+Comprehensive guides, API specifications, and architectural documentation for:
+
+1. **Getting Started**:
+   - Quickstart guides for Axum (`authkestra-axum`) and Actix-web (`authkestra-actix`).
+   - The Typestate Builder Pattern (`Engine<S, T>`, `AkWebAppEngine`, `AkApiEngine`, `AkEngine`).
+   - Wired endpoints vs. manual extractor integration.
+2. **Authentication Flows & Passwordless**:
+   - FIDO2 Passkeys (`WebAuthnAuthMethod`) with mandatory Re-Proof Gating.
+   - TOTP Authenticator Apps (RFC 6238), Magic Links, and Email/SMS OTP codes.
+   - Stateless OAuth2 with AES-256-GCM encrypted cookies (`AxumStatelessExt`).
+   - OIDC Client Discovery, Client Credentials, and RFC 8628 Device Flow.
+   - Cloudflare Turnstile & hCaptcha bot protection.
+   - Device Signatures & Proof-of-Possession (`authkestra-devsig`).
+3. **AI Agent & MCP Tool Security (`authkestra-mcp`)**:
+   - Three composable security tiers (`Public`, `Scoped`, `HumanApproved`).
+   - RFC 8785 JSON Canonicalization Scheme (JCS) and deterministic SHA-256 challenge digests.
+   - Human-in-the-Loop (HITL) Passkey step-up approvals and single-use `AtomicConsume`.
+   - Zero-Trust Downstream Token Vault (`DownstreamTokenBroker`, `EncryptedKvTokenVault`).
+4. **Enterprise Servers & Policy**:
+   - Full OpenID Provider (`authkestra-op`), RFC 8693 Token Exchange, and key rotation.
+   - Resource Server API guard with RFC 9449 DPoP and RFC 8705 mTLS token binding.
+   - Declarative AWS Cedar policy evaluation (`authkestra-policy`).
+   - Continuous Access Evaluation Protocol (CAEP / SSF RFC 8417) via `authkestra-ssf`.
+5. **AI Discoverability & Single-File Documentation**:
+   - Complete single-file documentation corpus at **[`https://docs.authkestra.com/llms-full.txt`](https://docs.authkestra.com/llms-full.txt)**.
+   - Summary context for AI agents at **[`https://authkestra.com/llms.txt`](https://authkestra.com/llms.txt)**.
+
+---
 
 ## 🚀 Project Structure
 
 ```
 .
-├── public/                     # favicon and other static assets
+├── public/                     # Favicons and static assets
 ├── src/
 │   ├── content/
-│   │   └── docs/               # every page on the site
+│   │   └── docs/               # Markdown/MDX documentation pages
 │   ├── styles/
-│   │   ├── tokens.css          # copy of the canonical design tokens — see below
-│   │   └── custom.css          # maps tokens.css onto Starlight's --sl-* variables
+│   │   ├── tokens.css          # Immutable copy of canonical design tokens
+│   │   └── custom.css          # Maps tokens.css onto Starlight's --sl-* variables
 │   └── content.config.ts
-├── astro.config.mjs             # site config + the sidebar definition
+├── astro.config.mjs            # Starlight configuration and sidebar navigation
 ├── package.json
 └── tsconfig.json
 ```
 
-Starlight looks for `.md` or `.mdx` files in `src/content/docs/`. Each file is exposed as a route
-based on its file name — but a new page only appears in the navigation once it is added to the
-`sidebar` array in `astro.config.mjs`.
+---
 
-Images referenced from Markdown go in `src/assets/` (create it if it does not exist) and are
-embedded with a relative link. Static assets, like favicons, go in `public/`.
+## 🎨 Design Tokens
 
-## 🎨 Design tokens
+`src/styles/tokens.css` is a **verbatim copy** of `authkestra/design/tokens.css` in the core repository. Do not edit it here. `src/styles/custom.css` imports `tokens.css` and maps variables to Starlight's `--sl-*` properties. Typography is bundled locally via `@fontsource-variable/inter` and `@fontsource-variable/jetbrains-mono` for zero third-party font requests.
 
-`src/styles/tokens.css` is a **verbatim copy** of the canonical
-`authkestra/design/tokens.css` — the same file the landing page and the playground copy. Do not
-edit it here: edit the canonical file in the `marcjazz/authkestra` repo, then re-copy it into this
-file unchanged (the header comment at the top of the file repeats this). `src/styles/custom.css`
-is where this site's own styling lives — it imports `tokens.css` and maps the tokens onto the
-`--sl-*` variables Starlight itself reads, plus a handful of card/code-block/tab rules that are
-specific to Starlight's markup and not part of the shared design system.
+---
 
-Type comes from `@fontsource-variable/inter` and `@fontsource-variable/jetbrains-mono`, imported
-directly in `custom.css` rather than loaded from a Google Fonts `<link>`, so the fonts ship from
-this site's own build instead of costing every visitor a third-party round trip.
+## 🧞 Development Commands
 
-## 🧞 Commands
+```bash
+# Install dependencies
+pnpm install
 
-All commands are run from this directory:
+# Start local dev server (http://localhost:4321)
+pnpm dev
 
-| Command           | Action                                       |
-| :---------------- | :------------------------------------------- |
-| `pnpm install`    | Installs dependencies                        |
-| `pnpm dev`        | Starts local dev server at `localhost:4321`  |
-| `pnpm build`      | Build the production site to `./dist/`       |
-| `pnpm preview`    | Preview the build locally, before deploying  |
-| `pnpm astro ...`  | Run CLI commands like `astro add`, `astro check` |
+# Build production site to ./dist/
+pnpm build
 
-## ✍️ Writing docs
+# Preview build locally
+pnpm preview
 
-Code samples on this site are not compiled by CI, so they drift easily. If you're documenting a
-public API change, check it against the `marcjazz/authkestra` repo's `crates/` before publishing —
-this repo no longer has that source next to it to grep. Where a runnable example exists under that
-repo's `crates/authkestra/examples/`, link to it and quote its `cargo run` command rather than
-inventing a fresh snippet — the examples *are* compiled, this site's prose is not.
+# Run Astro CLI checks
+pnpm astro check
+```
 
-## 🚢 Deployment
+---
 
-This site deploys to **docs.authkestra.com**. `astro.config.mjs`'s `site` value and the sitemap
-both assume that host — if you ever need to preview under a different one, override `site` for
-that build rather than committing a change to it.
+## ✍️ Documentation Contributions
 
-## 👀 Want to learn more?
+When documenting public API signatures, verify them against `authkestra/crates/` in the main repository. If a runnable example exists under `crates/authkestra/examples/`, reference it directly.
 
-Check out [Starlight's docs](https://starlight.astro.build/) or read
-[the Astro documentation](https://docs.astro.build).
+---
+
+## 🌐 Ecosystem Links
+
+- **Main Engine Repo**: [github.com/Authkestra/authkestra](https://github.com/Authkestra/authkestra)
+- **Landing Page**: [authkestra.com](https://authkestra.com)
+- **Interactive Playground**: [play.authkestra.com](https://play.authkestra.com)
+- **Official Skills Pack**: [github.com/Authkestra/skills](https://github.com/Authkestra/skills)
+- **crates.io**: [crates.io/crates/authkestra](https://crates.io/crates/authkestra)
+
+---
+
+## 📜 Licence
+
+Dual-licensed under **MIT** or **Apache-2.0**, at your option. Matching Authkestra itself.

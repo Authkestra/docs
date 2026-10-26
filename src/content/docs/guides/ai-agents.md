@@ -41,18 +41,26 @@ Install the official [Authkestra skill pack](https://github.com/Authkestra/skill
 
 ---
 
-## 2. Securing AI Agents & MCP Servers with Authkestra
+## 2. Securing AI Agents & MCP Servers with `authkestra-mcp`
 
-When building Model Context Protocol (MCP) servers or autonomous agent gateways in Rust, Authkestra gives you four composable primitives inside a single binary:
+Enable the `mcp` feature on the `authkestra` facade crate (or depend on `authkestra-mcp` directly) to embed a three-tier Policy Enforcement Point directly into your Rust Model Context Protocol (MCP) server:
 
-### Delegated Agent Tokens via RFC 8693 Token Exchange (`authkestra-op`)
-Never place long-lived user refresh tokens or god-mode API keys inside an LLM's context window. Enable `token_exchange_enabled: true` on `OpConfig` to let your agent gateway trade a user's token for a short-lived, strictly audience-bound (`allowed_audiences`) and scope-narrowed downstream token via `urn:ietf:params:oauth:grant-type:token-exchange`.
+```toml
+[dependencies]
+authkestra = { version = "0.13", features = ["axum", "mcp", "memory"] }
+```
 
-### Out-of-Band Human Approval via Device Flow (`DeviceFlow` + `authkestra-op`)
-When a headless CLI agent or background worker hits a restricted tool call, initiate an [RFC 8628 Device Authorization Grant](/providers/device-flow/) against your `authkestra-op` server. The human user opens the verification URI on their phone or laptop and authenticates with a phishing-resistant [Passkey](/providers/passkeys/) before the agent receives its execution token.
+### Three Composable Security Tiers (`McpSecurityTier`)
+Register tools on `McpRouter::builder()` with per-tool security policies:
+- **`McpSecurityTier::Public`**: Callable without authentication (or with optional caller identity).
+- **`McpSecurityTier::Scoped { required_scopes }`**: Validates Bearer or DPoP-bound tokens via `authkestra-resource`, returning RFC 9728 `WWW-Authenticate: Bearer resource_metadata=".../.well-known/oauth-protected-resource"` on `401 Unauthorized` and `insufficient_scope` on `403 Forbidden`.
+- **`McpSecurityTier::HumanApproved { required_scopes, reproof, approval_ttl_secs }`**: Requires both scope validation and a single-use cryptographic step-up human approval bound to the exact tool name and canonicalized arguments.
 
-### Cryptographic Parameter Binding (`authkestra-devsig`)
-Standard bearer tokens only prove *who* authorized the agent, not *which parameters* the agent is sending. With [`authkestra-devsig`](/providers/device-signatures/), every request carries an `X-Attestation` (minted by `authkestra-op`) and a single-use `X-Signature` JWS whose `bdh` claim is the SHA-256 digest of the exact HTTP request body (`mth`, `pth`, `qsh`, `bdh`, `aud`). Modifying a single tool argument invalidates the signature before your handler ever runs.
+### RFC 8785 JCS Cryptographic Parameter Binding
+When an agent invokes a `HumanApproved` tool without an execution proof, `authkestra-mcp` canonicalizes the JSON arguments per **RFC 8785 (JCS)** and computes a deterministic SHA-256 digest over `(session_id, tool_name, jcs_canonical_arguments, expires_at)`. It returns a `-32042` step-up elicitation challenge (`approval_id`, `challenge_digest`, `verification_url`). Once the human user approves the challenge with a fresh proof (`ReproofRequirement` + [Passkey](/providers/passkeys/), [TOTP](/providers/totp/), or [Device Signature](/providers/device-signatures/)), `authkestra-mcp` mints a single-use execution token consumed atomically via `AtomicConsume`. Mutating a single tool parameter (e.g., changing `amount: 50` to `amount: 5000`) deterministically invalidates the approval.
+
+### Zero-Trust Downstream Token Vault (`EncryptedKvTokenVault`)
+Never expose long-lived OAuth refresh tokens or third-party API keys inside an LLM's context window. `EncryptedKvTokenVault` encrypts downstream provider tokens at rest in your `KvStore` using **AES-256-GCM** with AAD subject/provider binding (`{subject_id}:{provider_id}`), and `ToolContext::downstream_token("github")` resolves scoped tokens on behalf of the authenticated `Identity` inside your tool handler.
 
 ### Guardrails & Instant Kill-Switch (`authkestra-policy` + `authkestra-ssf`)
-Evaluate every tool invocation against declarative [AWS Cedar policies](/advanced/policy-and-ssf/) (`authkestra-policy`) and terminate compromised agent sessions in real time via [OpenID CAEP `SessionRevoked` events](/advanced/policy-and-ssf/#2-shared-signals-framework--caep-authkestra-ssf) (`authkestra-ssf`).
+Evaluate tool invocations against declarative [AWS Cedar policies](/advanced/policy-engine/) (`authkestra-policy`) and terminate compromised agent sessions in real time via [OpenID CAEP `SessionRevoked` events](/advanced/continuous-access-evaluation/) (`authkestra-ssf`).
