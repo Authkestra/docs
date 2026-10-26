@@ -14,6 +14,8 @@ const LLMS_TXT = `# Authkestra (v0.13)
 - **Stateless OAuth**: OAuth \`state\` and \`nonce\` live in encrypted cookies, never in the database.
 - **No User Table**: Authkestra deliberately has no \`UserStore\` trait. Your application owns user/account records; Authkestra provides traits for protocol state (\`KvStore\`, \`SessionStore\`, \`CredentialStore\`, \`OpStore\`).
 - **Re-Proof Gated Enrolment (\`0.13+\`)**: \`TotpAuthMethod::register_totp\`, \`WebAuthnAuthMethod::start_register\`, and \`RecoveryCodeAuthMethod::generate\` require \`(&Identity, &ReproofRequirement, ...)\` rather than a bare \`user_id: &str\` to prevent confused-deputy and stale-session escalation attacks.
+- **Production Cedar Policy Wiring (\`policy\`)**: \`CedarPolicyEngine\` (\`authkestra-policy\`) evaluates declarative AWS Cedar policies. The engine does zero I/O and fetches entities through \`ResourceLoader\`. An erroring forbid policy fails closed with \`PolicyError::UnreliableDecision\`. Fully wired into \`authkestra-axum\` and \`authkestra-actix\` (\`PolicyGuard\`), \`authkestra-resource\`, and \`authkestra-mcp\` tool execution with structured \`tracing\` logs.
+- **Production Shared Signals / CAEP Wiring (\`ssf\`)**: \`PushReceiver\` (\`authkestra-ssf\`) ingests RFC 8417 Security Event Tokens and OpenID CAEP events. Wire push endpoints in Axum and Actix via \`POST /.well-known/ssf/events\` and \`POST /ssf/events\`. The built-in \`SessionRevocationHandler\` automatically revokes matching sessions in \`SessionStore\` upon receiving \`SessionRevoked\` or \`CredentialChange\` events.
 
 ## Full Documentation Corpus
 
@@ -49,8 +51,8 @@ const LLMS_TXT = `# Authkestra (v0.13)
 - [Resource Server (API)](https://docs.authkestra.com/advanced/resource-server/): \`Guard\`, \`JwtStrategy\`, multi-issuer JWKS, DPoP (RFC 9449), and mTLS (RFC 8705).
 - [OpenID Provider (OP)](https://docs.authkestra.com/advanced/op-server/): Full OIDC Provider (\`authkestra-op\`), \`OpStore\`, RFC 8693 Token Exchange, Device Code grant, and attestation issuance.
 - [Device Attestation](https://docs.authkestra.com/guides/device-attestation/): Enrolling and re-issuing hardware/service keys against \`authkestra-op\`.
-- [Policy Engine (Cedar)](https://docs.authkestra.com/advanced/policy-engine/): Declarative authorization with AWS Cedar (\`authkestra-policy\`).
-- [Continuous Access Evaluation (SSF/CAEP)](https://docs.authkestra.com/advanced/continuous-access-evaluation/): OpenID CAEP / RFC 8417 Security Event Token ingestion (\`authkestra-ssf\`).
+- [Policy Engine (Cedar)](https://docs.authkestra.com/advanced/policy-engine/): Declarative authorization with AWS Cedar (\`authkestra-policy\` / \`CedarPolicyEngine\`) wired into Axum/Actix (\`PolicyGuard\`), resource servers, and MCP tool execution.
+- [Continuous Access Evaluation (SSF/CAEP)](https://docs.authkestra.com/advanced/continuous-access-evaluation/): OpenID CAEP / RFC 8417 Security Event Token push receiver (\`authkestra-ssf\`) wired to \`POST /.well-known/ssf/events\` and \`POST /ssf/events\` with automated \`SessionRevocationHandler\`.
 - [Instrumentation & Tracing](https://docs.authkestra.com/advanced/instrumentation/): Production observability with \`tracing\`.
 
 ## Data & Storage

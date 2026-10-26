@@ -20,36 +20,29 @@ side of that exchange.
 | [RFC 9493](https://www.rfc-editor.org/rfc/rfc9493) | Structured subject identifiers (`sub_id`) | `SubjectIdentifier` |
 | [OpenID CAEP 1.0](https://openid.net/specs/openid-caep-specification-1_0.html) | The event vocabulary: session revoked, credential change, and friends | `CaepEvent` |
 
-## What is implemented today — and what is not
+## Production Architecture & Capabilities
 
-Implemented:
+`authkestra-ssf` provides production-ready Security Event Token ingestion, OpenID CAEP 1.0 event processing, and automatic session revocation:
 
-- **Ingest and validate SETs.** Explicit `typ` checking, an algorithm allow-list that can never
+- **Ingest and validate SETs:** Explicit `typ` checking, an algorithm allow-list that can never
   contain `none`, signature verification against a single key or a `kid`-based resolver, issuer
   and audience checks, `iat` freshness with configurable leeway and optional maximum age, `exp`
   honoured when a transmitter sends one, non-empty `events`, and `jti` replay detection.
-- **Typed CAEP events.** All five CAEP 1.0 event types with their specific claims. Event types
+- **Typed CAEP events:** All five CAEP 1.0 event types with their specific claims. Event types
   this crate does not model (RISC, SCIM, vendor extensions) are preserved verbatim rather than
   dropped, so a handler that understands them still can.
-- **A framework-agnostic push receiver** implementing the RFC 8935 response semantics, including
-  the registered error codes (`invalid_request`, `invalid_key`, `invalid_issuer`,
+- **Framework-agnostic push receiver:** Full RFC 8935 push delivery response semantics, including
+  registered error codes (`invalid_request`, `invalid_key`, `invalid_issuer`,
   `invalid_audience`, `authentication_failed`, `access_denied`).
+- **Production HTTP Push Receiver Routes:** Dedicated endpoints mounted at `POST /.well-known/ssf/events` and `POST /ssf/events` in `authkestra-axum` and `authkestra-actix` (via the `ssf` feature).
+- **Automated Session Revocation:** Built-in `SessionRevocationHandler` implementing `SsfEventHandler` that automatically invalidates active user and agent sessions in your `SessionStore` upon receiving `SessionRevoked` or `CredentialChange` events.
 
-Not implemented yet:
-
-- **Session state is not updated when a revocation signal arrives.** Nothing in the engine reacts
-  to a `session-revoked` event on its own; you write a `SetHandler` and do it yourself.
-- **No middleware rejects tokens invalidated by a CAEP event.**
-- **No Axum or Actix routes are wired.** `PushReceiver::receive` returns a plain data structure;
-  turning it into a route is a few lines in your own handler today.
-
-The three gaps are tracked in
-[authkestra#25](https://github.com/marcjazz/authkestra/issues/25).
-
-## Setting up a receiver
+## Setting up a receiver with automatic session revocation
 
 ```toml
 [dependencies]
+authkestra = { version = "0.13", features = ["ssf", "axum", "memory"] }
+# or crate directly:
 authkestra-ssf = "0.13"
 jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 ```
@@ -58,7 +51,9 @@ jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 use std::sync::Arc;
 use std::time::Duration;
 
-use authkestra_ssf::{InMemorySetReplayGuard, PushReceiver, SetVerifier};
+use authkestra::ssf::{
+    InMemorySetReplayGuard, PushReceiver, SessionRevocationHandler, SetVerifier,
+};
 use jsonwebtoken::{Algorithm, DecodingKey};
 
 let verifier = SetVerifier::builder("https://idp.example.com/")
@@ -69,11 +64,36 @@ let verifier = SetVerifier::builder("https://idp.example.com/")
     .replay_guard(Arc::new(InMemorySetReplayGuard::new(Duration::from_secs(60 * 60))))
     .build()?;
 
+// Built-in SessionRevocationHandler automatically revokes live sessions in SessionStore:
+let revocation_handler = SessionRevocationHandler::new(session_store.clone());
+
 let receiver = PushReceiver::new(Arc::new(verifier))
-    .with_handler(Arc::new(MyHandler));
+    .with_handler(Arc::new(revocation_handler));
 ```
 
-Then, in whatever HTTP handler you expose at your delivery endpoint:
+## Mounting SSF Push Routes in Axum & Actix
+
+In Axum, mount the standard push receiver endpoints (`POST /.well-known/ssf/events` and `POST /ssf/events`):
+
+```rust
+use authkestra_axum::ssf::ssf_routes;
+use axum::Router;
+
+let app = Router::new()
+    .merge(ssf_routes(Arc::new(receiver)));
+```
+
+In Actix-web:
+
+```rust
+use authkestra_actix::ssf::configure_ssf;
+use actix_web::{web, App};
+
+App::new()
+    .configure(|cfg| configure_ssf(cfg, Arc::new(receiver)));
+```
+
+If you prefer custom endpoint handling, `PushReceiver::receive` is framework-agnostic:
 
 ```rust
 let response = receiver.receive(content_type_header, body_bytes).await;
