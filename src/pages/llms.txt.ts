@@ -28,7 +28,7 @@ const LLMS_TXT = `# Authkestra (v0.13)
 - [Quickstart](https://docs.authkestra.com/guides/quickstart/): Working GitHub OAuth2 login in Axum and Actix-web.
 - [Framework Integration](https://docs.authkestra.com/guides/framework-integration/): \`AuthSession\`, \`AuthToken\`, \`AxumExt\`, \`AxumStatelessExt\`, \`ActixExt\`, and \`ActixStatelessExt\`.
 - [Wired Endpoints](https://docs.authkestra.com/guides/wired-endpoints/): Automatic vs. manual route wiring for \`/auth/login/{provider}\`, \`/auth/callback/{provider}\`, and \`/auth/logout\`.
-- [AI Coding Assistants & Agent Auth](https://docs.authkestra.com/guides/ai-agents/): Using \`llms.txt\`, \`Authkestra/skills\`, and securing AI agents & MCP servers.
+- [AI Coding Assistants & Agent Auth](https://docs.authkestra.com/guides/ai-agents/): Using \`llms.txt\`, \`Authkestra/skills\`, and securing AI agents & MCP servers with \`authkestra-mcp\` (\`McpRouter\`, \`McpSecurityTier\`, RFC 8785 JCS parameter-bound step-up approval, and AES-256-GCM \`EncryptedKvTokenVault\`).
 
 ## Authentication Flows
 
