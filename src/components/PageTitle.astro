@@ -1,0 +1,8 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import CopyAiPrompt from './CopyAiPrompt.astro';
+---
+
+<Default {...Astro.props}><slot /></Default>
+<CopyAiPrompt />

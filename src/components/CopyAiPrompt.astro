@@ -1,0 +1,219 @@
+---
+import { getAiPrompt } from '../lib/ai-prompts';
+
+interface Props {
+  slug?: string;
+}
+
+const { slug: propSlug } = Astro.props;
+const routeId = Astro.locals.starlightRoute?.id ?? '';
+const pathname = Astro.url.pathname.replace(/^\/|\/$/g, '');
+const rawSlug = propSlug || routeId || pathname || 'index';
+const prompt = getAiPrompt(rawSlug);
+---
+
+<div class="ai-prompt-bar not-content" data-ai-prompt={prompt}>
+  <div class="ai-prompt-top">
+    <div class="ai-prompt-tag">
+      <svg class="ai-sparkle-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+      </svg>
+      <span class="ai-prompt-label">AI Coding Prompt</span>
+      <span class="ai-prompt-sublabel">Claude & Cursor</span>
+    </div>
+    <span class="ai-prompt-version">authkestra = "0.13"</span>
+  </div>
+
+  <div class="ai-prompt-middle">
+    <p class="ai-prompt-snippet" title={prompt}>
+      <code>{prompt}</code>
+    </p>
+    <button type="button" class="ai-copy-button" aria-label="Copy AI prompt to clipboard">
+      <svg class="icon-copy" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <svg class="icon-check" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: none;">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span class="copy-text">Copy Prompt</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  function initCopyAiPrompt() {
+    const bars = document.querySelectorAll('.ai-prompt-bar[data-ai-prompt]');
+    bars.forEach((bar) => {
+      const btn = bar.querySelector<HTMLButtonElement>('.ai-copy-button');
+      if (!btn || btn.dataset.bound === 'true') return;
+      btn.dataset.bound = 'true';
+
+      btn.addEventListener('click', async () => {
+        const textToCopy = bar.getAttribute('data-ai-prompt') || '';
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          const copyIcon = btn.querySelector<HTMLElement>('.icon-copy');
+          const checkIcon = btn.querySelector<HTMLElement>('.icon-check');
+          const textSpan = btn.querySelector<HTMLElement>('.copy-text');
+
+          if (copyIcon) copyIcon.style.display = 'none';
+          if (checkIcon) checkIcon.style.display = 'inline-block';
+          if (textSpan) textSpan.textContent = 'Copied!';
+          btn.classList.add('copied');
+
+          setTimeout(() => {
+            if (copyIcon) copyIcon.style.display = 'inline-block';
+            if (checkIcon) checkIcon.style.display = 'none';
+            if (textSpan) textSpan.textContent = 'Copy Prompt';
+            btn.classList.remove('copied');
+          }, 2000);
+        } catch (e) {
+          console.error('Failed to copy prompt to clipboard:', e);
+        }
+      });
+    });
+  }
+
+  initCopyAiPrompt();
+  document.addEventListener('astro:page-load', initCopyAiPrompt);
+</script>
+
+<style>
+  .ai-prompt-bar {
+    margin: 1.25rem 0 1.5rem 0;
+    padding: 0.85rem 1rem;
+    background: hsl(var(--card));
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--ak-radius, 0.5rem);
+    box-shadow: var(--ak-shadow-1, 0 1px 3px rgba(0, 0, 0, 0.3));
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .ai-prompt-bar:hover {
+    border-color: var(--sl-color-hairline-light);
+    box-shadow: var(--ak-shadow-2, 0 4px 6px rgba(0, 0, 0, 0.4));
+  }
+
+  .ai-prompt-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .ai-prompt-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1;
+    color: hsl(var(--primary-accent));
+    font-weight: 500;
+  }
+
+  .ai-sparkle-icon {
+    color: hsl(var(--primary-accent));
+  }
+
+  .ai-prompt-label {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+
+  .ai-prompt-sublabel {
+    padding: 0.15rem 0.45rem;
+    background: hsl(var(--primary) / 0.15);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    color: hsl(var(--primary-accent));
+    font-weight: 500;
+  }
+
+  .ai-prompt-version {
+    font-family: var(--sl-font-mono);
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    padding: 0.15rem 0.45rem;
+    background: hsl(var(--background));
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.25rem;
+  }
+
+  .ai-prompt-middle {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .ai-prompt-snippet {
+    flex: 1;
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .ai-prompt-snippet code {
+    display: block;
+    font-family: var(--sl-font-mono);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    padding: 0.45rem 0.7rem;
+    border-radius: 0.35rem;
+    border: 1px solid var(--sl-color-hairline);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ai-copy-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border: 1px solid hsl(var(--primary));
+    border-radius: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .ai-copy-button:hover {
+    background: hsl(var(--primary-accent));
+    border-color: hsl(var(--primary-accent));
+  }
+
+  .ai-copy-button:active {
+    transform: scale(0.98);
+  }
+
+  .ai-copy-button.copied {
+    background: hsl(var(--ak-green-700, 142 76% 36%));
+    border-color: hsl(var(--ak-green-700, 142 76% 36%));
+    color: #ffffff;
+  }
+
+  @media (max-width: 640px) {
+    .ai-prompt-middle {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
+    }
+    .ai-copy-button {
+      justify-content: center;
+    }
+  }
+</style>

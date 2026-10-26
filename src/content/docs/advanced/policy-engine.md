@@ -1,19 +1,17 @@
 ---
 title: Policy Engine (Cedar)
-description: Proof-of-concept authorization with AWS Cedar policies.
+description: Declarative fine-grained authorization with AWS Cedar policies.
 ---
-
-:::caution[Proof of concept]
-`authkestra-policy` is an experiment tracked in
-[authkestra#21](https://github.com/marcjazz/authkestra/issues/21). It evaluates Cedar policies
-and is tested, but **nothing calls it yet** — there is no guard, extractor, or middleware wired
-to it, and the API will change. The integration design is
-[RFC-008](https://github.com/marcjazz/authkestra/blob/main/docs/rfc-008-policy-engine.md).
-:::
 
 Authkestra's other crates answer *"who are you?"*. This one answers *"may you do this?"*, using
 [AWS Cedar](https://www.cedarpolicy.com/) — so authorization rules live in a policy file you can
 review, diff and reload, instead of in `if role == "admin"` branches scattered across handlers.
+
+`authkestra-policy` is a production authorization engine wired across the Authkestra ecosystem:
+- **Axum & Actix route guards:** Wire declarative policy evaluation into router pipelines with `PolicyGuard`.
+- **Resource Server & API:** Restrict access to endpoints based on principal attributes, action names, and resource context.
+- **Model Context Protocol (MCP) tool authorization:** Evaluate fine-grained Cedar policies before executing high-impact AI agent tool calls.
+- **Structured observability:** Permit and deny decisions emit structured `tracing` spans with policy IDs and decision rationale.
 
 ## Enabling it
 
@@ -168,3 +166,39 @@ On a 24-core i7-13700KF, evaluating 10 policies against a 414-entity store takes
 p99 40 µs end-to-end in a release build (about a third of which is entity hydration). Policy
 evaluation is not the expensive part of your request — see RFC-008 §7 for the method and the
 caveats.
+
+## Framework & MCP Integration
+
+### Axum & Actix Route Protection
+
+When the `policy` feature is enabled on `authkestra-axum` or `authkestra-actix`, wrap your routes with `PolicyGuard`:
+
+```rust
+use std::sync::Arc;
+use authkestra::policy::CedarPolicyEngine;
+use authkestra::axum::PolicyGuard;
+use axum::{routing::get, Router};
+
+let policy_engine = Arc::new(
+    CedarPolicyEngine::builder()
+        .policies(policy_source)
+        .loader(loader)
+        .build()?,
+);
+
+let app = Router::new()
+    .route("/api/documents/:id", get(get_document))
+    .layer(PolicyGuard::new(policy_engine.clone()));
+```
+
+### Resource Server & MCP Tool Enforcement
+
+In `authkestra-resource`, `Guard` can validate incoming Bearer tokens and delegate fine-grained permission checks to `CedarPolicyEngine`.
+
+In `authkestra-mcp`, tool invocations enforce Cedar policies before dispatch:
+- **Principal:** The authenticated client or agent `Identity`.
+- **Action:** `Action::"CallTool"` or custom tool action names.
+- **Resource:** Target MCP tool name and canonicalized parameters.
+
+Permit and deny decisions automatically emit structured `tracing` logs with `cedar.decision`, `cedar.reasons`, and policy IDs.
+

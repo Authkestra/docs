@@ -15,9 +15,14 @@ The **`authkestra-engine`** crate is the brain of the system. It is entirely fra
 - **Why?**: By decoupling the engine from any specific web server (like Axum or Actix), we ensure your authentication logic is portable, highly testable, and isolated from HTTP request intricacies.
 
 ### 2. Extensions (Plugins)
-Pluggable components that implement the strict traits defined by the core engine.
-- **Examples**: `authkestra-providers` (GitHub, Google, etc.), `authkestra-oidc`.
-- **Responsibilities**: These crates provide concrete implementations for OAuth/OIDC providers or external mechanisms without injecting their own business logic into the engine.
+Pluggable components that implement the strict traits defined by the core engine and extend it with authorization, continuous trust, AI agent security, and identity providers.
+- **Examples**:
+  - `authkestra-providers` (GitHub, Google, Discord) & `authkestra-oidc`: Concrete OAuth2 / OIDC provider discovery and token verification.
+  - `authkestra-policy`: Declarative Attribute-Based Access Control (ABAC) using AWS Cedar policies, wired into Axum/Actix route guards, resource servers, and MCP tool execution.
+  - `authkestra-ssf`: OpenID Shared Signals and Events (SSE) and Continuous Access Evaluation Profile (CAEP) push event receiver with automated session revocation in `SessionStore`.
+  - `authkestra-mcp`: Embedded Model Context Protocol security with JCS parameter-bound step-up approval and zero-trust token vault.
+  - `authkestra-devsig`: Request signatures and device-bound hardware attestation.
+- **Responsibilities**: These crates provide specialized protocol, policy, and cryptographic implementations without polluting the core engine or leaking HTTP transport logic.
 
 ### 3. Adapters (Integrations)
 Framework-specific wrappers that embed the engine into your web application.

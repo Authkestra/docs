@@ -23,6 +23,10 @@ export default defineConfig({
 				{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
 			],
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/marcjazz/authkestra' }],
+			components: {
+				PageTitle: './src/components/PageTitle.astro',
+				Hero: './src/components/Hero.astro',
+			},
 			customCss: [
 				'./src/styles/custom.css',
 			],
@@ -83,7 +87,6 @@ export default defineConfig({
 				},
 				{
 					label: 'Authorization & Continuous Trust',
-					badge: { text: 'Preview', variant: 'caution' },
 					items: [
 						{ label: 'Policy Engine (Cedar)', slug: 'advanced/policy-engine' },
 						{ label: 'Continuous Access Evaluation', slug: 'advanced/continuous-access-evaluation' },
