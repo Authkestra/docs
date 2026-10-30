@@ -41,11 +41,11 @@ use authkestra_engine::store::redis::RedisStore;
 let store = RedisStore::new("redis://127.0.0.1:6379/", "session".to_string())?;
 ```
 
-If you already hold an open `redis::Client`, prefer `RedisStore::with_client(client, prefix)` —
+If you already hold an open `redis::Client`, prefer `RedisStore::with_client(client, prefix)` - 
 it lets several prefixed stores share one connection pool instead of opening a new one each.
 
 If you'd rather use a relational database for generic KV/session storage, implement
-`authkestra_engine::store::KvStore` directly against it — see the
+`authkestra_engine::store::KvStore` directly against it -  see the
 **[SQL Store](/storage/sql-store)** page for the OP-specific relational store `authkestra-op`
 ships, and `authkestra-example-seaorm`/`authkestra-example-diesel` in the repository for real,
 compiled examples of a third-party ORM implementing storage traits from scratch.

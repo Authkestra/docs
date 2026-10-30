@@ -47,8 +47,8 @@ let auth_engine = Authkestra::builder()
     .build();
 ```
 
-The typestate lives in the two generic parameters of `Engine<S, T>` — the session-store slot and
-the token-manager slot — each of which is either `Missing` or `Configured<_>`. The aliases
+The typestate lives in the two generic parameters of `Engine<S, T>` -  the session-store slot and
+the token-manager slot -  each of which is either `Missing` or `Configured<_>`. The aliases
 `AkWebAppEngine` (sessions), `AkApiEngine` (tokens) and `AkEngine` (both) name the combinations
 you are most likely to store in your application state, and are far more readable in a compiler
 error than the expanded generics.

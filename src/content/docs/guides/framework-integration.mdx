@@ -38,12 +38,12 @@ engine alias you store in state decides which extractor compiles:
 
 | Engine alias | `.session_store()` | `.jwt_secret()` / `.token_manager()` | `AuthSession` | `AuthToken` |
 | --- | --- | --- | --- | --- |
-| `AkWebAppEngine` | ✅ | — | ✅ | ❌ compile error |
-| `AkApiEngine` | — | ✅ | ❌ compile error | ✅ |
+| `AkWebAppEngine` | ✅ | -  | ✅ | ❌ compile error |
+| `AkApiEngine` | -  | ✅ | ❌ compile error | ✅ |
 | `AkEngine` | ✅ | ✅ | ✅ | ✅ |
 
 Using `AuthToken` with an `AkWebAppEngine` state fails with
-`the trait bound Result<Arc<TokenManager>, AxumError>: FromRef<AppState> is not satisfied` — the
+`the trait bound Result<Arc<TokenManager>, AxumError>: FromRef<AppState> is not satisfied` -  the
 fix is to build the engine with a token manager and store it as `AkApiEngine` or `AkEngine`, not to
 change the handler.
 
@@ -79,7 +79,7 @@ pub async fn my_handler(
   <TabItem label="Actix-web" icon="seti:rust">
 
 Actix extractors reject with `actix_web::Error`, so the idiomatic form here is `Option<AuthSession>`
-(or `Result<AuthSession, actix_web::Error>`) — there is no `ActixError` type.
+(or `Result<AuthSession, actix_web::Error>`) -  there is no `ActixError` type.
 
 ```rust
 use authkestra::actix::AuthSession;

@@ -56,7 +56,7 @@ let session_store: Arc<dyn SessionStore> = Arc::new(MemoryStore::default());
 
 // 3. Build the Authkestra Engine
 let auth_engine = Authkestra::builder()
-    // `.provider()` takes a `Flow`, not a bare provider — wrap it in `OAuth2Flow`.
+    // `.provider()` takes a `Flow`, not a bare provider -  wrap it in `OAuth2Flow`.
     .provider(OAuth2Flow::new(github_provider))
     .session_store(session_store)
     .build();

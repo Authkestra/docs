@@ -24,13 +24,13 @@ authkestra = { version = "0.13", features = ["axum", "op"] }
 
 To run an OP Server, you need to persist four specific types of records: Clients, Auth Codes, Refresh Tokens, and Device Codes. 
 
-In Authkestra, this is handled through the unified `OpStore` supertrait. `OpStore` aggregates the four granular storage traits, each of whose methods take `&mut self` rather than `&self` — a pool-backed implementation typically borrows a single connection for the duration of the call — and adds a handful of **defaulted** methods on top:
+In Authkestra, this is handled through the unified `OpStore` supertrait. `OpStore` aggregates the four granular storage traits, each of whose methods take `&mut self` rather than `&self` -  a pool-backed implementation typically borrows a single connection for the duration of the call -  and adds a handful of **defaulted** methods on top:
 
 ```rust
 pub trait OpStore:
     ClientStore + AuthorizationCodeStore + RefreshTokenStore + DeviceCodeStore + Send + Sync
 {
-    // All defaulted — override only what you need.
+    // All defaulted -  override only what you need.
     async fn record_client_assertion_jti(&mut self, jti: &str, expires_at: DateTime<Utc>)
         -> Result<bool, StoreError>;   // RFC 7523 private_key_jwt replay guard
     async fn check_and_record_dpop_jti(&mut self, jti: &str, expires_at: DateTime<Utc>)
@@ -42,7 +42,7 @@ pub trait OpStore:
 
 :::caution[The two replay guards default to *refusing*]
 `record_client_assertion_jti` and `check_and_record_dpop_jti` are defaulted so that adding replay
-tracking did not break every existing `OpStore` — but their defaults **reject every assertion and
+tracking did not break every existing `OpStore` -  but their defaults **reject every assertion and
 every proof**. That is deliberate: a `private_key_jwt` or DPoP deployment without single-use `jti`
 tracking would let a captured assertion or proof stay replayable for its whole lifetime, which is
 strictly worse than not offering the feature. If you enable either mechanism you *must* wire a real
@@ -63,13 +63,13 @@ let op_store: Arc<dyn authkestra_op::CloneableOpStore> = Arc::new(CompositeOpSto
 ));
 ```
 
-`Op::builder().store(...)` takes an `Arc<dyn CloneableOpStore>`, not a bare `Arc<dyn OpStore>` behind a lock. Because each `OpStore` method needs `&mut self`, a single shared instance can't be called concurrently — `CloneableOpStore` (blanket-implemented for any `OpStore + Clone`) lets every request clone a cheap, independent handle instead of contending on a global `Mutex`. This is why `CompositeOpStore`, `SqlxOpStore`, and `RedisStore` all implement `Clone`: cloning them clones an inner connection pool handle (e.g. `sqlx::Pool` or a Redis client), not the underlying connections themselves. A custom `OpStore` implementation needs `#[derive(Clone)]` (or a manual `Clone` impl) for the same reason.
+`Op::builder().store(...)` takes an `Arc<dyn CloneableOpStore>`, not a bare `Arc<dyn OpStore>` behind a lock. Because each `OpStore` method needs `&mut self`, a single shared instance can't be called concurrently -  `CloneableOpStore` (blanket-implemented for any `OpStore + Clone`) lets every request clone a cheap, independent handle instead of contending on a global `Mutex`. This is why `CompositeOpStore`, `SqlxOpStore`, and `RedisStore` all implement `Clone`: cloning them clones an inner connection pool handle (e.g. `sqlx::Pool` or a Redis client), not the underlying connections themselves. A custom `OpStore` implementation needs `#[derive(Clone)]` (or a manual `Clone` impl) for the same reason.
 
 :::caution[`Clone` must share state, not copy it]
-A handler clones the store once per request and drops the clone when the request ends. `Clone` here has to mean "a new handle onto the same underlying state" — never "an independent copy of the data". A naive `#[derive(Clone)]` over a plain `HashMap` field, for example, compiles and satisfies `CloneableOpStore`, but every write a handler makes disappears with that request's clone: the code `/authorize` stores would never be visible to the following `/token` exchange, which would always fail with `invalid_grant` — no compile error, no log, no failing test. Put mutable in-memory state behind `Arc<Mutex<_>>`/`Arc<RwLock<_>>` (as `authkestra_op::MemoryClientAssertionStore` and `authkestra_engine::store::memory::MemoryStore` do), or use a connection-pool handle that is already cheap-clone-shares-state by construction.
+A handler clones the store once per request and drops the clone when the request ends. `Clone` here has to mean "a new handle onto the same underlying state" -  never "an independent copy of the data". A naive `#[derive(Clone)]` over a plain `HashMap` field, for example, compiles and satisfies `CloneableOpStore`, but every write a handler makes disappears with that request's clone: the code `/authorize` stores would never be visible to the following `/token` exchange, which would always fail with `invalid_grant` -  no compile error, no log, no failing test. Put mutable in-memory state behind `Arc<Mutex<_>>`/`Arc<RwLock<_>>` (as `authkestra_op::MemoryClientAssertionStore` and `authkestra_engine::store::memory::MemoryStore` do), or use a connection-pool handle that is already cheap-clone-shares-state by construction.
 :::
 
-`CompositeOpStore` carries two further, optional slots for the replay guards above — supply them
+`CompositeOpStore` carries two further, optional slots for the replay guards above -  supply them
 with `.with_client_assertion_store(...)` and `.with_dpop_replay_store(...)`. Left unset they resolve
 to `NoClientAssertionStore` / `NoDpopReplayStore`, which are the fail-closed defaults described in
 the caution box.
@@ -78,9 +78,7 @@ the caution box.
 The `OpStore` interface allows overriding `handle_refresh_token` for custom refresh token rotation or revocation policies. When the `openid` scope is requested during the refresh flow, Authkestra automatically issues an updated `id_token` alongside the new access token.
 :::
 
-Check the [axum_op_server.rs](https://github.com/marcjazz/authkestra/blob/main/crates/authkestra/examples/axum_op_server.rs)
-example in the repository for full database wiring code (`cargo run -p authkestra --example
-axum_op_server --all-features`); `actix_op_server.rs` is the Actix counterpart.
+See the complete [`axum_op_server.rs`](https://github.com/marcjazz/authkestra/blob/main/crates/authkestra/examples/axum_op_server.rs) example in the repository for full database wiring code (`cargo run -p authkestra --example axum_op_server --all-features`); [`actix_op_server.rs`](https://github.com/marcjazz/authkestra/blob/main/crates/authkestra/examples/actix_op_server.rs) is the Actix counterpart.
 
 ## Supported Grant Types
 
@@ -116,7 +114,7 @@ use authkestra_op::config::OpConfig;
 use authkestra_op::Op;
 
 let config = OpConfig {
-    // No trailing slash — the discovery/JWKS URLs are built by appending to this.
+    // No trailing slash -  the discovery/JWKS URLs are built by appending to this.
     issuer: "http://localhost:3000".to_string(),
     scopes_supported: vec!["openid".to_string(), "profile".to_string(), "email".to_string()],
     response_types_supported: vec!["code".to_string()],
@@ -131,14 +129,14 @@ let config = OpConfig {
 let op = Op::builder()
     .engine(auth_engine)
     .config(config)
-    // `.store()` takes `Arc<dyn OpStore>`, not a bare store — wrap it.
+    // `.store()` takes `Arc<dyn OpStore>`, not a bare store -  wrap it.
     .store(Arc::new(op_store))
     .build();
 ```
 
 :::caution
 `OpConfig` has no `Default` impl, so every field above is required. The four TTL/toggle fields
-are easy to miss when copying an older snippet — a struct literal that omits them will not
+are easy to miss when copying an older snippet -  a struct literal that omits them will not
 compile.
 :::
 
@@ -206,12 +204,12 @@ step-by-step client walkthrough lives in the [Device Attestation guide](/guides/
 | --- | --- |
 | `POST /enrol` | Validate the caller's public key and second factor, then issue a single-use proof-of-possession challenge. |
 | `POST /enrol/complete` | Consume the challenge, verify the signature came from the enrolled key, compute `cnf.jkt` from that key (never from caller input), and mint the attestation. |
-| `POST /reissue` | Silently renew a near-expiry attestation by re-proving possession of the same key. No second factor — continuity of the key stands in for it. |
+| `POST /reissue` | Silently renew a near-expiry attestation by re-proving possession of the same key. No second factor -  continuity of the key stands in for it. |
 
 ### `AttestationConfig`
 
 `AttestationConfig` is `#[non_exhaustive]`, so build it with `new()` (or `Default`) and adjust the
-fields you care about — a struct literal will not compile from outside the crate. The defaults are
+fields you care about -  a struct literal will not compile from outside the crate. The defaults are
 24h / 12h / 5min:
 
 ```rust
@@ -228,7 +226,7 @@ attestation_config.challenge_ttl_secs = 300;                // a PoP nonce, not 
 `authkestra-op` deliberately hardcodes neither a telecom integration nor an attribute/revocation
 store, so the host application supplies both:
 
-- **`SecondFactorVerifier`** (required to enrol) — verifies whatever `SecondFactorProof`
+- **`SecondFactorVerifier`** (required to enrol) -  verifies whatever `SecondFactorProof`
   (`{ kind, value }`, opaque to the OP) the caller submits at enrolment. An SMS/TOTP check for a
   device; an out-of-band admin approval or one-time bootstrap secret for a service principal,
   which has no phone to text. Any `Err` surfaces as `OpError::SecondFactorFailed`, so log your own
@@ -246,14 +244,14 @@ store, so the host application supplies both:
   }
   ```
 
-- **`AttestationStatusProvider`** (optional) — consulted at re-issuance. Return
+- **`AttestationStatusProvider`** (optional) -  consulted at re-issuance. Return
   `Ok(Some(attributes))` to renew with (possibly updated) attributes, or `Ok(None)` to refuse a
   revoked principal, which fails with `OpError::PrincipalRevoked`. **If you do not configure one,
-  re-issuance copies the previous attestation's attributes forward unchanged** — so an application
+  re-issuance copies the previous attestation's attributes forward unchanged** -  so an application
   that revokes devices out-of-band needs this hook, or a revoked device keeps renewing.
 
 The challenge store is an `EnrolmentChallengeStore`, which has a blanket impl over any
-`KvStore` + `AtomicConsume` backend — the same mechanism session and OP data already use, so
+`KvStore` + `AtomicConsume` backend -  the same mechanism session and OP data already use, so
 memory/Redis/SQL all work unchanged.
 
 ### Wiring

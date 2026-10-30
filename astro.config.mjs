@@ -26,21 +26,18 @@ export default defineConfig({
 			components: {
 				PageTitle: './src/components/PageTitle.astro',
 				Hero: './src/components/Hero.astro',
+				SocialIcons: './src/components/SocialIcons.astro',
 			},
 			customCss: [
 				'./src/styles/custom.css',
 			],
 			sidebar: [
 				{
-					label: 'Playground',
-					link: 'https://play.authkestra.com',
-					attrs: { target: '_blank', rel: 'noreferrer' },
-					badge: { text: 'Live', variant: 'tip' },
-				},
-				{
-					label: 'Welcome',
+					label: 'Overview',
 					items: [
+						{ label: 'Introduction', link: '/' },
 						{ label: 'Why Authkestra?', slug: 'concepts/architecture' },
+						{ label: 'Typestate Builder Pattern', slug: 'concepts/typestate-builder' },
 					],
 				},
 				{
@@ -53,19 +50,25 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Authentication Flows',
+					label: 'Authentication Methods',
 					items: [
 						{ label: 'Stateless OAuth2', slug: 'providers/oauth2' },
 						{ label: 'OIDC Provider (Client)', slug: 'providers/oidc' },
-						{ label: 'Client Credentials', slug: 'providers/client-credentials' },
-						{ label: 'Device Flow', slug: 'providers/device-flow' },
 						{ label: 'Passkeys (WebAuthn)', slug: 'providers/passkeys' },
 						{ label: 'TOTP (Authenticator Apps)', slug: 'providers/totp' },
 						{ label: 'Magic Link', slug: 'providers/magic-link' },
 						{ label: 'Email/SMS One-Time Codes', slug: 'providers/otp' },
 						{ label: 'Recovery Codes', slug: 'providers/recovery-codes' },
-						{ label: 'Bot Protection (CAPTCHA)', slug: 'providers/bot-protection' },
+						{ label: 'Client Credentials', slug: 'providers/client-credentials' },
+						{ label: 'Device Flow', slug: 'providers/device-flow' },
+					],
+				},
+				{
+					label: 'Security & Attestation',
+					items: [
 						{ label: 'Device Signatures', slug: 'providers/device-signatures' },
+						{ label: 'Device Attestation', slug: 'guides/device-attestation' },
+						{ label: 'Bot Protection (CAPTCHA)', slug: 'providers/bot-protection' },
 					],
 				},
 				{
@@ -73,7 +76,13 @@ export default defineConfig({
 					items: [
 						{ label: 'Resource Server (API)', slug: 'advanced/resource-server' },
 						{ label: 'OpenID Provider (OP)', slug: 'advanced/op-server' },
-						{ label: 'Device Attestation', slug: 'guides/device-attestation' },
+					],
+				},
+				{
+					label: 'Authorization & Continuous Trust',
+					items: [
+						{ label: 'Policy Engine (Cedar)', slug: 'advanced/policy-engine' },
+						{ label: 'Continuous Access Evaluation', slug: 'advanced/continuous-access-evaluation' },
 					],
 				},
 				{
@@ -86,16 +95,8 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Authorization & Continuous Trust',
+					label: 'Observability',
 					items: [
-						{ label: 'Policy Engine (Cedar)', slug: 'advanced/policy-engine' },
-						{ label: 'Continuous Access Evaluation', slug: 'advanced/continuous-access-evaluation' },
-					],
-				},
-				{
-					label: 'Core Concepts',
-					items: [
-						{ label: 'Typestate Builder Pattern', slug: 'concepts/typestate-builder' },
 						{ label: 'Instrumentation & Tracing', slug: 'advanced/instrumentation' },
 					],
 				},

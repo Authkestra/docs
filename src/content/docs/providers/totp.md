@@ -40,7 +40,7 @@ By registering it this way, the Engine will automatically block any attempt to u
 
 ## Registering a Device (Re-Proof Gated)
 
-To enroll a user, keep a reference to your `TotpAuthMethod` and call `register_totp`. Like Passkeys and Recovery Codes, TOTP enrolment is gated by [`ReproofRequirement`](/providers/passwordless/#re-proof-gating-reproofrequirement) so a stale session cannot silently enrol a second factor, and the account ID is taken directly from `identity.external_id`:
+To enroll a user, keep a reference to your `TotpAuthMethod` and call `register_totp`. Like Passkeys and Recovery Codes, TOTP enrolment is gated by [`ReproofRequirement`](/providers/passkeys/#registration-ceremony-re-proof-gated) so a stale session cannot silently enrol a second factor, and the account ID is taken directly from `identity.external_id`:
 
 ```rust
 use authkestra_engine::auth::{AuthMethod, ReproofRequirement};

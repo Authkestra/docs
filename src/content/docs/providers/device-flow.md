@@ -19,7 +19,7 @@ authkestra-engine = "0.13"
 tokio = { version = "1", features = ["full"] }
 ```
 
-A runnable version lives in the repository — it needs no web framework at all:
+A runnable version lives in the repository -  it needs no web framework at all:
 
 ```bash
 cargo run -p authkestra-engine --example device_flow
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## How Polling Works
 
 `poll_for_token(&self, device_code: &str, interval: Option<u64>)` takes the interval as an
-`Option` — pass `device_resp.interval` straight through; it falls back to 5 seconds when the
+`Option` -  pass `device_resp.interval` straight through; it falls back to 5 seconds when the
 provider did not specify one. It then automatically:
 - Executes HTTP requests at the provider-requested `interval`.
 - Intercepts `authorization_pending` and `slow_down` error responses without failing the future, dynamically adjusting the poll rate if the provider requests a slow down.
@@ -82,6 +82,6 @@ provider did not specify one. It then automatically:
 :::caution[`poll_for_token` blocks the thread between polls]
 The wait between polls is a blocking sleep, not an async one, so awaiting `poll_for_token` on a
 multi-purpose async runtime stalls that worker thread for the whole ceremony (potentially minutes).
-Until that is fixed upstream, drive it from a dedicated thread — `tokio::task::spawn_blocking`, or
-its own runtime — rather than from a request handler.
+Until that is fixed upstream, drive it from a dedicated thread -  `tokio::task::spawn_blocking`, or
+its own runtime -  rather than from a request handler.
 :::

@@ -7,7 +7,7 @@ const LLMS_TXT = `# Authkestra (v0.13)
 ## Critical Rules for AI Coding Assistants
 
 - **Target Version**: \`authkestra = "0.13"\`.
-- **RFC-001 Architecture Consolidation**: \`authkestra-core\`, \`authkestra-flow\`, \`authkestra-token\`, and \`authkestra-session\` no longer exist — they were merged into \`authkestra-engine\` (re-exported via \`authkestra::core\` and \`authkestra::store\`).
+- **RFC-001 Architecture Consolidation**: \`authkestra-core\`, \`authkestra-flow\`, \`authkestra-token\`, and \`authkestra-session\` no longer exist -  they were merged into \`authkestra-engine\` (re-exported via \`authkestra::core\` and \`authkestra::store\`).
 - **Removed Facade Features**: There is NO \`session\` or \`token\` feature on \`authkestra\` or \`authkestra-engine\` in \`0.13\`. Session and token machinery are always compiled into \`authkestra-engine\`. Pick a storage backend feature instead: \`memory\`, \`redis\`, \`sql-postgres\`, \`sql-mysql\`, or \`sql-sqlite\`.
 - **TLS Backend**: \`rustls-aws-lc-rs\` is enabled by default. If using \`default-features = false\` with \`rustls-no-provider\`, you MUST install a \`rustls::crypto::CryptoProvider\` before constructing any Authkestra client or \`reqwest\` will panic at runtime.
 - **Typestate Builder**: \`Authkestra::builder()\` returns \`Engine<S, T>\` where \`S\` (session store) and \`T\` (token manager) start as \`Missing\`. Use the aliases \`AkWebAppEngine\` (sessions), \`AkApiEngine\` (tokens), or \`AkEngine\` (both) in your router state (\`#[derive(AxumState)]\` / \`#[derive(ActixState)]\`).

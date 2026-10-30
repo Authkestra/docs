@@ -61,7 +61,7 @@ The `ValidationConfig::builder()` supports advanced validation rules and cryptog
 - **Supported Signing Algorithms**: Supports `RS256`, `RS384`, `RS512`, `ES256`, `ES384`, and `EdDSA` (`Ed25519` OKP keys).
 - **Multi-Audience Support**: To accept tokens minted for any of multiple distinct client IDs, chain `.audiences(["client_a", "client_b"])`.
 - **Strict Key IDs (`kid`)**: To strictly reject malformed tokens that lack a `kid` header instead of falling back to the first JWKS key, chain `.require_kid(true)`.
-- **Clock-skew tolerance**: `exp` and `nbf` are checked with a 60-second allowance, so a token is accepted for about a minute past its expiry. That absorbs disagreement between the issuer's clock and yours. Chain `.leeway(0)` where both share a clock, or in tests that assert a token is rejected once it expires — with the default, such a test passes when you expect it to fail. The value is `authkestra_engine::token::DEFAULT_LEEWAY_SECS`, the same constant `TokenManager` uses.
+- **Clock-skew tolerance**: `exp` and `nbf` are checked with a 60-second allowance, so a token is accepted for about a minute past its expiry. That absorbs disagreement between the issuer's clock and yours. Chain `.leeway(0)` where both share a clock, or in tests that assert a token is rejected once it expires -  with the default, such a test passes when you expect it to fail. The value is `authkestra_engine::token::DEFAULT_LEEWAY_SECS`, the same constant `TokenManager` uses.
 
 ```rust
 let advanced_config = ValidationConfig::builder()
@@ -74,7 +74,7 @@ let advanced_config = ValidationConfig::builder()
 :::caution[`build()` panics on misconfiguration, deliberately]
 `ValidationConfig::builder().build()` panics if neither `jwks_url` nor any `trusted_issuer` was
 set (there would be no key material at all), and if `dpop_resource_origin` is not a bare
-`scheme://host` — no path, no query, no trailing slash. Both are startup-time failures by design:
+`scheme://host` -  no path, no query, no trailing slash. Both are startup-time failures by design:
 the alternative is a resource server that boots fine and then rejects every request for reasons
 indistinguishable from an attack.
 :::
@@ -94,7 +94,7 @@ let config = ValidationConfig::builder()
 
 Once any trust-map entry is present the verifier is in multi-issuer mode: an `iss` outside the map
 is rejected outright and a token with no `iss` at all is rejected too. There is deliberately **no**
-fallback endpoint — a default JWKS for unknown issuers is issuer confusion. For issuers only known
+fallback endpoint -  a default JWKS for unknown issuers is issuer confusion. For issuers only known
 at runtime, implement `JwksResolver` and use `JwtStrategy::with_resolver(config, resolver)`; the
 same rule applies, your implementation must reject issuers it does not recognise.
 
@@ -104,9 +104,9 @@ Two optional checks bind an access token to the client that was issued it, so a 
 not usable on its own. Both are **off by default**, and both are no-ops for a token that carries no
 binding claim at all:
 
-- `.require_cert_binding(true)` — RFC 8705 mutual-TLS binding: a token with `cnf.x5t#S256` is only
+- `.require_cert_binding(true)` -  RFC 8705 mutual-TLS binding: a token with `cnf.x5t#S256` is only
   accepted if the request's client certificate matches.
-- `.require_dpop(true)` — RFC 9449 DPoP: a token with `cnf.jkt` is only accepted if the request
+- `.require_dpop(true)` -  RFC 9449 DPoP: a token with `cnf.jkt` is only accepted if the request
   carries a `DPoP` proof header for the same key, bound (`ath`) to this token and not seen before.
   Optionally add `.dpop_resource_origin("https://api.example.com")` to also check the proof's `htu`
   against this server's own origin.
@@ -127,15 +127,15 @@ let strategy = JwtStrategy::<UserIdentity>::new(config)
 
 :::caution[`require_dpop` without a replay store rejects everything]
 `JwtStrategy` starts with the fail-closed `NoDpopReplayStore`, which refuses every proof. That is
-intentional — DPoP without single-use `jti` tracking gives no replay protection while looking like
-it does — but it means `require_dpop(true)` on its own turns every DPoP-bound token into a `401`.
+intentional -  DPoP without single-use `jti` tracking gives no replay protection while looking like
+it does -  but it means `require_dpop(true)` on its own turns every DPoP-bound token into a `401`.
 Always pair it with `.with_dpop_replay_store(...)`.
 :::
 
 ### JWKS behind a private CA
 
 `JwksCache` fetches with a `reqwest::Client` that trusts only the platform certificate store, which
-makes a JWKS published under a private CA unreachable — the common shape being a resource server
+makes a JWKS published under a private CA unreachable -  the common shape being a resource server
 validating tokens against an issuer inside its own cluster. Supply your own client instead of
 replacing the whole process's trust store via `SSL_CERT_FILE`:
 
@@ -150,13 +150,13 @@ let cache = JwksCache::new("https://idp.internal/jwks".to_string(), Duration::fr
 
 ### 2. Flexible Strategy Chaining
 
-The `Guard` builder allows you to chain multiple strategies together. Under the default policy —
-`AuthPolicy::FirstSuccess` — a request passes if *any* of the chained strategies successfully
+The `Guard` builder allows you to chain multiple strategies together. Under the default policy - 
+`AuthPolicy::FirstSuccess` -  a request passes if *any* of the chained strategies successfully
 validates it (e.g., accepting an OIDC JWT *or* an API key). `AuthPolicy::AllSuccess` and
 `AuthPolicy::FailFast` are the alternatives; pass one to `.policy(...)` to override.
 
 `ApiKeyStrategy` below is illustrative, not something Authkestra ships. Any type implementing
-`authkestra_engine::strategy::AuthenticationStrategy<I>` slots into the chain — the trait is a
+`authkestra_engine::strategy::AuthenticationStrategy<I>` slots into the chain -  the trait is a
 single `async fn authenticate(&self, parts: &Parts) -> Result<Option<I>, AuthError>`, where
 `Ok(None)` means "no credentials of my kind here, try the next strategy" and `Err` fails the
 whole chain.

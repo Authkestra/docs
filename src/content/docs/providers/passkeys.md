@@ -49,7 +49,7 @@ cargo run -p authkestra --example axum_mfa_server --all-features
 
 ## Registration Ceremony (Re-Proof Gated)
 
-Enrolling a passkey is a security-posture change, so `start_register` requires an authenticated `Identity` and a [`ReproofRequirement`](/providers/passwordless/#re-proof-gating-reproofrequirement) (introduced in `0.13`) rather than a bare user ID string. This prevents a stale or stolen session from silently enrolling an attacker's passkey, and binds the subject into the returned `PasskeyEnrolment` state so `finish_register` cannot be tricked into filing the credential under a different account:
+Enrolling a passkey is a security-posture change, so `start_register` requires an authenticated `Identity` and a [`ReproofRequirement`](#registration-ceremony-re-proof-gated) (introduced in `0.13`) rather than a bare user ID string. This prevents a stale or stolen session from silently enrolling an attacker's passkey, and binds the subject into the returned `PasskeyEnrolment` state so `finish_register` cannot be tricked into filing the credential under a different account:
 
 ```rust
 use authkestra_engine::auth::{webauthn::WebAuthnAuthMethod, AuthMethod, ReproofRequirement};
@@ -85,8 +85,8 @@ of the account and map back to exactly one user.
 Because the derivation is a plain UUIDv5, you can reproduce the same handle in any language to index
 your own users by handle.
 
-If your application allocates handles itself — or needs a display name distinct from the username,
-since `start_register` passes `username` for both — use `start_register_with_handle`:
+If your application allocates handles itself -  or needs a display name distinct from the username,
+since `start_register` passes `username` for both -  use `start_register_with_handle`:
 
 ```rust
 use authkestra_engine::auth::webauthn::derive_user_handle;

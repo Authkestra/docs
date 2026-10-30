@@ -4,7 +4,7 @@ description: Declarative fine-grained authorization with AWS Cedar policies.
 ---
 
 Authkestra's other crates answer *"who are you?"*. This one answers *"may you do this?"*, using
-[AWS Cedar](https://www.cedarpolicy.com/) — so authorization rules live in a policy file you can
+[AWS Cedar](https://www.cedarpolicy.com/) -  so authorization rules live in a policy file you can
 review, diff and reload, instead of in `if role == "admin"` branches scattered across handlers.
 
 `authkestra-policy` is a production authorization engine wired across the Authkestra ecosystem:
@@ -24,7 +24,7 @@ authkestra-policy = "0.13"
 
 ## The one rule: the engine never touches your database
 
-Cedar decides using an *entity store* — the principal, the resource, their groups and
+Cedar decides using an *entity store* -  the principal, the resource, their groups and
 attributes. The engine holds no database handle and never fetches any of it. Everything arrives
 through a `ResourceLoader` you implement:
 
@@ -42,7 +42,7 @@ impl ResourceLoader for PostgresLoader {
         request: &AuthorizationRequest,
     ) -> Result<Entities, PolicyError> {
         // Fetch just this request's principal, resource, and their group memberships.
-        // Storage faults become PolicyError::loader(e) — never a silent deny.
+        // Storage faults become PolicyError::loader(e) -  never a silent deny.
         todo!()
     }
 }
@@ -99,14 +99,14 @@ Cedar is **deny by default** and **forbid overrides permit**: a request is allow
 
 ## Reading a decision
 
-- `decision.is_allowed()` — the answer.
-- `decision.reasons()` — the ids of the policies that decided it. Empty on a deny means *no rule
+- `decision.is_allowed()` -  the answer.
+- `decision.reasons()` -  the ids of the policies that decided it. Empty on a deny means *no rule
   allowed it* (the default deny); non-empty means a `forbid` matched. Name your rules with
   `@id("...")` so these stay stable when you reorder a policy file. A policy without one keeps
   Cedar's positional id (`policy2` for the third policy in the file), and because those are handed
   out by position, `@id("policy0")` and anything else of the form `policy<digits>` is rejected at
-  load time — it would name the wrong rule. `policy-admin-override` and the like are fine.
-- `decision.errors()` — policies that failed to evaluate (a missing attribute, a type error).
+  load time -  it would name the wrong rule. `policy-admin-override` and the like are fine.
+- `decision.errors()` -  policies that failed to evaluate (a missing attribute, a type error).
   Cedar skips those and carries on, so a non-empty list means the decision was made on only part
   of your rule set. They are logged at `warn` with the policy id.
 
@@ -116,14 +116,14 @@ A `PolicyError` is never a deny. If your loader cannot reach its database you ge
 ## A skipped `forbid` is refused, not allowed
 
 Because Cedar skips an erroring policy rather than failing the request, a broken `forbid` would
-otherwise produce an `Allow` that only happened because the denying rule never ran — and
+otherwise produce an `Allow` that only happened because the denying rule never ran -  and
 `is_allowed() == true` would give you no way to tell. Authkestra refuses to answer instead:
 
 | decision | erroring policies | you get |
 | --- | --- | --- |
 | `Allow` | at least one `forbid` | `Err(PolicyError::UnreliableDecision { .. })` |
-| `Allow` | `permit`s only | `Ok(allow)` — another permit matched; errors listed on the decision |
-| `Deny` | any | `Ok(deny)` — nothing skipped could have turned a Deny into an Allow |
+| `Allow` | `permit`s only | `Ok(allow)` -  another permit matched; errors listed on the decision |
+| `Deny` | any | `Ok(deny)` -  nothing skipped could have turned a Deny into an Allow |
 
 Treat `UnreliableDecision` as a 500, not a 403: the request was not denied, it was unanswerable,
 and the fix is the broken policy or the missing entity attribute named in the error.
@@ -158,13 +158,13 @@ let engine = PolicyEngine::builder()
 
 With a schema, a policy referring to an action or attribute the schema does not declare is
 rejected **when it is loaded** rather than silently never matching, and each request's context is
-type-checked. Without one, nothing is validated — a typo becomes a rule that never fires.
+type-checked. Without one, nothing is validated -  a typo becomes a rule that never fires.
 
 ## Performance
 
 On a 24-core i7-13700KF, evaluating 10 policies against a 414-entity store takes p50 23 µs /
 p99 40 µs end-to-end in a release build (about a third of which is entity hydration). Policy
-evaluation is not the expensive part of your request — see RFC-008 §7 for the method and the
+evaluation is not the expensive part of your request -  see RFC-008 §7 for the method and the
 caveats.
 
 ## Framework & MCP Integration

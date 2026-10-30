@@ -4,7 +4,7 @@ description: Ingesting and validating Security Event Tokens so an external IdP o
 ---
 
 A session that was legitimate when it started does not stay legitimate. The user's password gets
-reset, their laptop drops out of compliance, an administrator revokes their session — and none of
+reset, their laptop drops out of compliance, an administrator revokes their session -  and none of
 that reaches your service until the next token refresh, which may be an hour away.
 
 The **Shared Signals Framework** closes that gap: a cooperating provider pushes you a signed
@@ -131,12 +131,12 @@ impl SetHandler for MyHandler {
 
 Returning `HandlerError::Rejected` answers the transmitter with `400 access_denied`; returning
 `HandlerError::Internal` answers `500`, so a conformant transmitter retries. Handlers run *before*
-the response is produced, because this crate has no store of its own — if you want the
+the response is produced, because this crate has no store of its own -  if you want the
 asynchronous shape RFC 8935 §2 suggests, enqueue inside the handler and return immediately.
 
 ### Your handlers must be idempotent
 
-The replay slot for a SET is taken during verification, before any handler runs — that is what
+The replay slot for a SET is taken during verification, before any handler runs -  that is what
 makes two *concurrent* deliveries of the same SET dispatch only once. When a handler returns
 `HandlerError::Internal`, the receiver gives that slot back before answering 500, so the
 transmitter's retry is actually verified and dispatched instead of being acknowledged as a
@@ -144,13 +144,13 @@ duplicate and dropped.
 
 The consequence is that a retry replays the **whole** delivery: every event in the SET, through
 every handler, including the ones that already succeeded before the one that failed. Write
-handlers that can run twice — key your writes on `set.jti`, or make them upserts.
+handlers that can run twice -  key your writes on `set.jti`, or make them upserts.
 
 `HandlerError::Rejected` keeps the slot, since a `400` tells the transmitter not to retry.
 
 One window is left open deliberately: a concurrent duplicate that arrives between the record and
 the release is answered `202` without dispatch. If the original delivery then fails, that
-particular duplicate has already been answered — but the transmitter's retry of the failed
+particular duplicate has already been answered -  but the transmitter's retry of the failed
 delivery finds the slot free and delivers the event, so it is not lost. Holding the slot across
 dispatch instead would close the window at the cost of losing an event on every handler failure.
 
@@ -170,13 +170,13 @@ dispatch instead would close the window at the cost of losing an event on every 
   that describes your policy stays in your logs (as structured tracing fields) rather than going
   back to whoever POSTed.
 - **Explicit typing is mandatory here.** RFC 8417 §2.3 only requires `typ: secevent+jwt` when a
-  SET could be confused with another kind of JWT — which is exactly the situation a general
+  SET could be confused with another kind of JWT -  which is exactly the situation a general
   receiver is in, so this crate always requires it.
 - **`exp` is optional; `nbf` is ignored.** A SET describes something that already happened, so
   RFC 8417 §2.2 discourages `exp` entirely and never profiles `nbf`. Freshness comes from `iat`.
 - **An empty `jti` is refused.** RFC 8417 §2.2 makes `jti` the SET's unique identifier. An empty
   or whitespace-only one identifies nothing, and would collapse the replay guard to one slot per
-  issuer — so it is a `400 invalid_request`.
+  issuer -  so it is a `400 invalid_request`.
 
 ## Body size limits
 
@@ -188,7 +188,7 @@ let receiver = PushReceiver::new(verifier).with_max_body_bytes(64 * 1024);
 ```
 
 **Set a limit in your HTTP layer as well.** By the time `receive` is called, the body has already
-been read into memory by the framework, so this check is a second line of defence — it stops an
+been read into memory by the framework, so this check is a second line of defence -  it stops an
 oversized body reaching the parser and the signature verifier, but it cannot prevent the
 allocation. What actually bounds what gets buffered is axum's `DefaultBodyLimit`, actix's
 `PayloadConfig`, or your reverse proxy's `client_max_body_size`.
@@ -196,7 +196,7 @@ allocation. What actually bounds what gets buffered is axum's `DefaultBodyLimit`
 ## Building the models in your own tests
 
 The public models are `#[non_exhaustive]`, so they cannot be built with struct-literal syntax from
-outside the crate — but every one of them has a constructor, precisely so that the code you write
+outside the crate -  but every one of them has a constructor, precisely so that the code you write
 to map a CAEP event onto your own domain stays unit-testable without minting and verifying a real
 SET:
 

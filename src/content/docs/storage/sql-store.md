@@ -5,7 +5,7 @@ description: Opinionated SQL relational persistence for building an OpenID Provi
 
 If you are building an OpenID Provider (OP) using `authkestra-op`, you can implement the storage traits (`ClientStore`, `AuthorizationCodeStore`, `RefreshTokenStore`, and `DeviceCodeStore`) however you prefer.
 
-However, to simplify building OPs, Authkestra provides a batteries-included **native SQL** implementation in a separate crate: `authkestra_store_sqlx::SqlxOpStore`. It lives outside `authkestra-op` so that core has zero `sqlx` dependency — you only pull in `sqlx` (and its Postgres/MySQL/SQLite driver) if you actually want SQL-backed storage.
+However, to simplify building OPs, Authkestra provides a batteries-included **native SQL** implementation in a separate crate: `authkestra_store_sqlx::SqlxOpStore`. It lives outside `authkestra-op` so that core has zero `sqlx` dependency -  you only pull in `sqlx` (and its Postgres/MySQL/SQLite driver) if you actually want SQL-backed storage.
 
 ## Opinionated Relational Schema
 
@@ -27,7 +27,7 @@ authkestra-store-sqlx = { version = "0.13", features = ["postgres"] }
 
 The generic KV store creates a single `authkestra_kv` table; `SqlxOpStore` instead owns a set of
 normalized tables with foreign keys between them. Neither runs its migration for you on
-connection — both expose an idempotent `migrate()` you call once at startup.
+connection -  both expose an idempotent `migrate()` you call once at startup.
 
 If you would rather manage the OP schema with your own migration runner (`sqlx-cli`, `refinery`,
 or hand-written SQL), skip `migrate()` and create the tables yourself; the store issues plain
@@ -37,9 +37,9 @@ queries against them and does not track a migration version of its own.
 
 0.7 added RFC 9449 DPoP refresh-token continuity and RFC 7523 `private_key_jwt` client
 authentication, which need three new, nullable columns **and one new table** (`oauth_dpop_jti`,
-which backs DPoP proof replay tracking per RFC 9449 §11.1 — without it every DPoP request is
+which backs DPoP proof replay tracking per RFC 9449 §11.1 -  without it every DPoP request is
 refused). `SqlxOpStore`'s `find_client` and
-`store_token` reference these columns unconditionally — **not** only when you call `migrate()` —
+`store_token` reference these columns unconditionally -  **not** only when you call `migrate()` - 
 so if you provision the schema yourself, upgrading to 0.7 without adding them breaks every
 token request against your existing tables. If you call `migrate()`, it adds them for you
 (idempotently, safe to run against a pre-0.7 database); this section is only for a schema you
@@ -53,7 +53,7 @@ ALTER TABLE authkestra.oauth_clients ADD COLUMN IF NOT EXISTS jwks JSONB;
 ```
 
 ```sql
--- SQLite (no ADD COLUMN IF NOT EXISTS — skip a statement if the column is already there)
+-- SQLite (no ADD COLUMN IF NOT EXISTS -  skip a statement if the column is already there)
 ALTER TABLE authkestra_oauth_refresh_tokens ADD COLUMN jkt TEXT;
 ALTER TABLE authkestra_oauth_clients ADD COLUMN token_endpoint_auth_method TEXT;
 ALTER TABLE authkestra_oauth_clients ADD COLUMN jwks TEXT;
@@ -85,14 +85,14 @@ CREATE TABLE IF NOT EXISTS authkestra_oauth_dpop_jti (
 );
 ```
 
-Rows are self-expiring in the logical sense — a `jti` whose `expires_at` has passed is reclaimed
-in place by the next proof that happens to reuse it — but nothing sweeps the table, so a busy OP
+Rows are self-expiring in the logical sense -  a `jti` whose `expires_at` has passed is reclaimed
+in place by the next proof that happens to reuse it -  but nothing sweeps the table, so a busy OP
 accumulates one row per distinct proof. Prune it on whatever schedule suits you:
 `DELETE FROM ... WHERE expires_at <= now()`. Deleting a not-yet-expired row re-opens the replay
 window for that proof's remaining lifetime.
 
 ```sql
--- MySQL (no ADD COLUMN IF NOT EXISTS across commonly-deployed versions — same caveat as SQLite)
+-- MySQL (no ADD COLUMN IF NOT EXISTS across commonly-deployed versions -  same caveat as SQLite)
 ALTER TABLE authkestra_oauth_refresh_tokens ADD COLUMN jkt VARCHAR(255);
 ALTER TABLE authkestra_oauth_clients ADD COLUMN token_endpoint_auth_method JSON;
 ALTER TABLE authkestra_oauth_clients ADD COLUMN jwks JSON;
@@ -103,7 +103,7 @@ as `jkt: None` / `token_endpoint_auth_method: None` / `jwks: None`, exactly as i
 refresh token predates this release.
 
 **`token_endpoint_auth_method` and `jwks` hold JSON, not bare text.** `find_client` decodes both
-through `sqlx`'s `Json` type and — deliberately — returns a storage error rather than silently
+through `sqlx`'s `Json` type and -  deliberately -  returns a storage error rather than silently
 falling back to `None` when a non-`NULL` value fails to decode, because `None` means "no client
 authentication configured". On Postgres and MySQL the `JSONB`/`JSON` column type rejects a
 malformed value at `INSERT` time; on SQLite the column is plain `TEXT` and will accept anything,
@@ -116,13 +116,13 @@ one of `"client_secret_basic"`, `"client_secret_post"`, `"private_key_jwt"`, or 
 ```sql
 -- correct
 UPDATE authkestra_oauth_clients SET token_endpoint_auth_method = '"private_key_jwt"' WHERE client_id = 'my-client';
--- WRONG: not valid JSON — every lookup of this client now fails with a storage error
+-- WRONG: not valid JSON -  every lookup of this client now fails with a storage error
 UPDATE authkestra_oauth_clients SET token_endpoint_auth_method = 'private_key_jwt' WHERE client_id = 'my-client';
--- WRONG: valid JSON, but not a method this release models — also a storage error, by design
+-- WRONG: valid JSON, but not a method this release models -  also a storage error, by design
 UPDATE authkestra_oauth_clients SET token_endpoint_auth_method = '"client_secret_jwt"' WHERE client_id = 'my-client';
 ```
 
-`jwks` is the client's JWK Set **object**, exactly as RFC 7517 §5 defines it — `{"keys": [ ... ]}`,
+`jwks` is the client's JWK Set **object**, exactly as RFC 7517 §5 defines it -  `{"keys": [ ... ]}`,
 not a bare array and not a URL:
 
 ```sql

@@ -48,7 +48,7 @@ let config = VerifierConfig::new(
     "https://api.example.test",
 );
 
-// The JWKS cache does no network I/O of its own — populate it with
+// The JWKS cache does no network I/O of its own -  populate it with
 // `jwks.insert(issuer, kid, jwk).await` from wherever you fetch and refresh keys.
 let jwks = Arc::new(IssuerJwks::new());
 let replay_store: Arc<dyn ReplayStore> = Arc::new(InMemoryReplayStore::new());
@@ -62,7 +62,7 @@ let devsig = DevSig::builder()
 
 :::caution
 `allowed_algs` is asymmetric-only. `VerifierConfig::new` silently drops any HMAC algorithm you
-pass, and `verify()` rejects the whole HMAC family regardless — the device's private key never
+pass, and `verify()` rejects the whole HMAC family regardless -  the device's private key never
 leaves the device, so there is no symmetric secret a verifier could legitimately share.
 :::
 
@@ -114,7 +114,7 @@ By verifying the signature, you ensure that the request was genuinely initiated 
 
 ## Testing your principal mapping
 
-The verified identity is an `authkestra_devsig::DeviceIdentity`, and it is `#[non_exhaustive]` — you cannot build one with a struct expression from your own crate. Use `DeviceIdentity::new(subject, device, key_thumbprint, attributes)` to unit-test the code that maps an identity onto your own principal or session type, which is where the security-relevant defaults live (for example, an absent `role` attribute must fall back to your least-privileged value):
+The verified identity is an `authkestra_devsig::DeviceIdentity`, and it is `#[non_exhaustive]` -  you cannot build one with a struct expression from your own crate. Use `DeviceIdentity::new(subject, device, key_thumbprint, attributes)` to unit-test the code that maps an identity onto your own principal or session type, which is where the security-relevant defaults live (for example, an absent `role` attribute must fall back to your least-privileged value):
 
 ```rust
 use authkestra_devsig::DeviceIdentity;

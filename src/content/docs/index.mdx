@@ -5,9 +5,9 @@ description: What Authkestra is, how it's put together, and where to go next.
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-Authkestra is an embedded identity engine for Rust: authentication and authorization logic that lives inside your application rather than a separate service you run alongside it. The core, `authkestra-engine`, is pure Rust with no web framework baked in — it defines the traits (`Provider`, `AuthMethod`, `Flow`, `SessionStore`, `KvStore`) and the `Engine` orchestrator built with a typestate builder, so a misconfigured stack fails to compile instead of failing at runtime.
+Authkestra is an embedded identity engine for Rust: authentication and authorization logic that lives inside your application rather than a separate service you run alongside it. The core, `authkestra-engine`, is pure Rust with no web framework baked in -  it defines the traits (`Provider`, `AuthMethod`, `Flow`, `SessionStore`, `KvStore`) and the `Engine` orchestrator built with a typestate builder, so a misconfigured stack fails to compile instead of failing at runtime.
 
-Framework support is added through thin adapter crates — `authkestra-axum` and `authkestra-actix` — that translate the engine's types into extractors and middleware for each framework. Everything the engine needs to persist (sessions, OAuth client state, OP tokens) is defined behind storage traits rather than a fixed schema, so you bring your own database and your own user table; Authkestra doesn't have one.
+Framework support is added through thin adapter crates -  `authkestra-axum` and `authkestra-actix` -  that translate the engine's types into extractors and middleware for each framework. Everything the engine needs to persist (sessions, OAuth client state, OP tokens) is defined behind storage traits rather than a fixed schema, so you bring your own database and your own user table; Authkestra doesn't have one.
 
 On top of that core, `authkestra-providers` and `authkestra-oidc` supply concrete OAuth2/OIDC providers, and `authkestra-op` lets you run your own OpenID Connect Provider instead of only consuming one.
 
@@ -25,7 +25,7 @@ On top of that core, `authkestra-providers` and `authkestra-oidc` supply concret
 		href="/guides/framework-integration/"
 	/>
 	<LinkCard
-		title="Authentication Flows"
+		title="Authentication Methods"
 		description="Add a specific method: OAuth2, OIDC, passkeys, TOTP, device flow, and more."
 		href="/providers/oauth2/"
 	/>
@@ -46,6 +46,17 @@ On top of that core, `authkestra-providers` and `authkestra-oidc` supply concret
 	/>
 </CardGrid>
 
-## Try it, read it
+## Interactive Sandbox & Source
 
-Try the flows in a live sandbox at [play.authkestra.com](https://play.authkestra.com), or browse the source and open an issue on [GitHub](https://github.com/marcjazz/authkestra).
+<CardGrid>
+	<LinkCard
+		title="Live Playground"
+		description="Test OAuth2 handshakes, passkey registrations, and token inspection live in your browser."
+		href="https://play.authkestra.com"
+	/>
+	<LinkCard
+		title="GitHub Repository"
+		description="Browse the open-source Rust codebase, inspect examples, and contribute on GitHub."
+		href="https://github.com/marcjazz/authkestra"
+	/>
+</CardGrid>

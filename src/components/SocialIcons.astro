@@ -1,0 +1,81 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+---
+
+<div class="header-playground-wrapper sl-flex">
+  <a
+    href="https://play.authkestra.com"
+    target="_blank"
+    rel="noreferrer"
+    class="header-playground-btn"
+    title="Open interactive Authkestra Playground in a new tab"
+  >
+    <span class="live-dot" aria-hidden="true"></span>
+    <span class="playground-label">Playground</span>
+    <svg class="external-icon" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 3h6v6"></path>
+      <path d="M10 14 21 3"></path>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+    </svg>
+  </a>
+  <Default {...Astro.props}><slot /></Default>
+</div>
+
+<style>
+  .header-playground-wrapper {
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .header-playground-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.75rem;
+    font-size: var(--ak-text-xs, 0.75rem);
+    font-weight: 500;
+    line-height: 1;
+    color: hsl(var(--foreground));
+    background: hsl(var(--card));
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--radius, 0.625rem);
+    text-decoration: none;
+    box-shadow: var(--ak-shadow-1);
+    transition: color var(--ak-duration-fast) ease, border-color var(--ak-duration-fast) ease, background-color var(--ak-duration-fast) ease, box-shadow var(--ak-duration-fast) ease;
+  }
+
+  .header-playground-btn:hover {
+    color: hsl(var(--foreground));
+    border-color: var(--sl-color-hairline-light);
+    background: hsl(var(--ak-neutral-800));
+    box-shadow: var(--ak-shadow-2);
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: hsl(var(--ak-green-400));
+    box-shadow: 0 0 6px hsl(var(--ak-green-400) / 0.8);
+    flex-shrink: 0;
+  }
+
+  .external-icon {
+    color: hsl(var(--muted-foreground));
+    transition: color var(--ak-duration-fast) ease;
+  }
+
+  .header-playground-btn:hover .external-icon {
+    color: hsl(var(--foreground));
+  }
+
+  @media (max-width: 50rem) {
+    .playground-label {
+      display: none;
+    }
+    .header-playground-btn {
+      padding: 0.35rem 0.5rem;
+    }
+  }
+</style>

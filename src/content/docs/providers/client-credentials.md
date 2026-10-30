@@ -17,7 +17,7 @@ authkestra-engine = "0.13"
 tokio = { version = "1", features = ["full"] }
 ```
 
-A runnable version lives in the repository — it needs no web framework at all:
+A runnable version lives in the repository -  it needs no web framework at all:
 
 ```bash
 cargo run -p authkestra-engine --example client_credentials
@@ -86,11 +86,11 @@ let flow = ClientCredentialsFlow::new_private_key_jwt(
 );
 ```
 
-`alg` must agree with the key type the authorization server has registered for this client —
+`alg` must agree with the key type the authorization server has registered for this client - 
 Authkestra's own OP derives the algorithm it accepts from the *registered public key*, never from
 the assertion header. If the server holds several keys for the client, chain `.with_kid("k1")` so
 it can tell which one signed. Everything after that is unchanged: call `get_token(...)` as above.
 
 On the *server* side, accepting `private_key_jwt` requires wiring a `ClientAssertionStore` for
-single-use `jti` tracking — see the [OP Server](/advanced/op-server/) page; the default refuses
+single-use `jti` tracking -  see the [OP Server](/advanced/op-server/) page; the default refuses
 every assertion.

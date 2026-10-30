@@ -25,7 +25,7 @@ Because this is a trait, you can implement it using `sqlx`, `diesel`, `redis`, o
 
 In practice you rarely implement it directly: `authkestra-engine` carries a blanket impl of
 `SessionStore` for any `KvStore<Session>`, so implementing the smaller [`KvStore`](/storage/kv-store)
-trait gets you a session store for free — which is exactly how `MemoryStore` and `RedisStore`
+trait gets you a session store for free -  which is exactly how `MemoryStore` and `RedisStore`
 both qualify.
 
 ## Included Stores

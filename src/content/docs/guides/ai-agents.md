@@ -4,7 +4,7 @@ description: Using Authkestra with Claude Code, Cursor, and Windsurf via llms.tx
 ---
 
 Authkestra is designed for two sides of the AI era:
-1. **Zero-Hallucination Code Generation ("Vibe-Coding" Guardrails)**: Because `Authkestra::builder()` uses a strict **Typestate Builder Pattern**, an AI coding assistant cannot accidentally wire a session route without a session store or a stateless JWT callback without a token manager — invalid authentication flows fail at `cargo check` instead of shipping a runtime vulnerability.
+1. **Zero-Hallucination Code Generation ("Vibe-Coding" Guardrails)**: Because `Authkestra::builder()` uses a strict **Typestate Builder Pattern**, an AI coding assistant cannot accidentally wire a session route without a session store or a stateless JWT callback without a token manager -  invalid authentication flows fail at `cargo check` instead of shipping a runtime vulnerability.
 2. **High-Assurance AI Agent & MCP Authorization**: Authkestra's embedded OIDC Provider (`authkestra-op`), Resource Server (`authkestra-resource`), Device-Bound Signatures (`authkestra-devsig`), WebAuthn Passkeys, and AWS Cedar Policy Engine (`authkestra-policy`) provide the exact cryptographic primitives needed to authenticate AI agents, broker scoped downstream tokens, and enforce human-in-the-loop (HITL) step-up approval.
 
 ---
@@ -15,8 +15,8 @@ Authkestra is designed for two sides of the AI era:
 
 Every deploy of `docs.authkestra.com` generates machine-readable documentation indexes following the [llms.txt standard](https://llmstxt.org/):
 
-- **[`https://docs.authkestra.com/llms.txt`](/llms.txt)**: Concise index of all Authkestra crates, feature flags, architectural rules, and documentation links.
-- **[`https://docs.authkestra.com/llms-full.txt`](/llms-full.txt)**: Complete, single-file concatenation of the entire Authkestra documentation corpus for pasting into Claude, Cursor `@Docs`, Windsurf, or local RAG pipelines.
+- [**`/llms.txt`**](/llms.txt): Concise index of all Authkestra crates, feature flags, architectural rules, and documentation links.
+- [**`/llms-full.txt`**](/llms-full.txt): Complete, single-file concatenation of the entire Authkestra documentation corpus for pasting into Claude, Cursor `@Docs`, Windsurf, or local RAG pipelines.
 
 ### Official Agent Skill Pack (`Authkestra/skills`)
 

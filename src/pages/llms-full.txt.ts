@@ -58,7 +58,7 @@ export const GET: APIRoute = async () => {
 	];
 
 	const sections: string[] = [
-		'# Authkestra — Complete Documentation Corpus (v0.13)',
+		'# Authkestra -  Complete Documentation Corpus (v0.13)',
 		'',
 		'> Source: https://docs.authkestra.com | Index: https://docs.authkestra.com/llms.txt | Crate: https://crates.io/crates/authkestra | Skills: https://github.com/Authkestra/skills',
 		'',

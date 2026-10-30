@@ -56,7 +56,7 @@ cargo run -p authkestra --example axum_oauth_stateless --all-features
 ## Wiring the Routes
 
 Because we are not using sessions, we use the stateless router counterpart: `auth_engine.axum_router_stateless()` for Axum or `auth_engine.actix_scope_stateless()` for Actix-web. These live on
-`AxumStatelessExt` / `ActixStatelessExt`, **not** on `AxumExt` / `ActixExt` — importing the wrong
+`AxumStatelessExt` / `ActixStatelessExt`, **not** on `AxumExt` / `ActixExt` -  importing the wrong
 trait is the usual cause of "no method named `axum_router_stateless` found".
 
 <Tabs>
@@ -126,7 +126,7 @@ async fn login_handler(
 use actix_web::{web, Responder};
 use authkestra::actix::helpers;
 
-// `Engine<S, T>` is the typestate engine itself — `S`/`T` are the session-store and
+// `Engine<S, T>` is the typestate engine itself -  `S`/`T` are the session-store and
 // token-manager states, not your application state.
 async fn login_handler(
     path: web::Path<String>,
