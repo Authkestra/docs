@@ -18,7 +18,9 @@ review, diff and reload, instead of in `if role == "admin"` branches scattered a
 ```toml
 [dependencies]
 authkestra = { version = "0.15", features = ["policy"] }
-# or the crate on its own:
+# Required when wiring PolicyGuard in Axum / Actix route handlers:
+authkestra-resource = { version = "0.15", features = ["policy"] }
+# or the policy crate on its own:
 authkestra-policy = "0.15"
 ```
 
@@ -175,10 +177,19 @@ When the `policy` feature is enabled on `authkestra-axum` or `authkestra-actix`,
 
 ```rust
 use std::sync::Arc;
+use authkestra::axum::{policy::AuthPolicyGuard, AuthSession, AxumState};
+use authkestra::core::AkWebAppEngine;
 use authkestra::policy::PolicyEngine;
-use authkestra::axum::policy::AuthPolicyGuard;
 use authkestra_resource::PolicyGuard;
 use axum::{extract::Path, routing::get, Router};
+
+#[derive(Clone, AxumState)]
+struct AppState {
+    #[authkestra(engine)]
+    auth: AkWebAppEngine,
+    #[authkestra(store)]
+    policy_guard: Arc<PolicyGuard>,
+}
 
 let policy_engine = Arc::new(
     PolicyEngine::builder()
@@ -186,14 +197,15 @@ let policy_engine = Arc::new(
         .loader(loader)
         .build()?,
 );
-let guard = Arc::new(PolicyGuard::new(policy_engine));
+let policy_guard = Arc::new(PolicyGuard::new(policy_engine));
 
 async fn get_document(
     Path(id): Path<String>,
+    AuthSession(session): AuthSession,
     AuthPolicyGuard(guard): AuthPolicyGuard,
 ) -> Result<&'static str, axum::http::StatusCode> {
     let decision = guard
-        .authorize(&identity, "read", &format!(r#"Doc::"{id}""#), None)
+        .authorize(&session.identity, "read", &format!(r#"Doc::"{id}""#), None)
         .await
         .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
     if decision.is_allowed() {
@@ -205,7 +217,7 @@ async fn get_document(
 
 let app = Router::new()
     .route("/api/documents/:id", get(get_document))
-    .with_state(guard);
+    .with_state(AppState { auth, policy_guard });
 ```
 
 ### Resource Server & MCP Tool Enforcement

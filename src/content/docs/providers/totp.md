@@ -80,3 +80,7 @@ let result = engine.authenticate(AuthInput::MfaChallenge {
 ### Built-in Replay Protection
 
 Authkestra strictly adheres to [RFC 6238](https://datatracker.ietf.org/doc/html/rfc6238). It atomically claims the active time step via `CredentialStore::claim_totp_step`, ensuring the exact same code cannot be accepted twice under concurrent requests or anywhere within the drift window.
+
+:::note[Custom `CredentialStore` migration (`v0.15+`)]
+Custom `CredentialStore` implementations must override `claim_totp_step` with atomic compare-and-advance semantics (`matched_step > last_used_step`). The trait's default implementation returns `AuthError::Unsupported`, causing matching TOTP logins to fail until updated.
+:::

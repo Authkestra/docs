@@ -57,7 +57,7 @@ let devsig = DevSig::builder()
 
 Profile v1 enforces strict request binding and uniform refusals:
 - `qsh` and `bdh` claims must be present when the request has a query string or body, and omitted when absent.
-- The attestation `att` claim carries `status` and an optional `KeyRole` (`KeyRole::Ambient` or `KeyRole::UserPresent`) surfaced on `DeviceIdentity.role`.
+- The attestation `att` claim carries `status` and an optional `KeyRole` (`KeyRole::Ambient` or `KeyRole::UserPresent`) surfaced via `identity.key_role()` (which reads `att.role` and returns `KeyRole::Ambient` when absent or unrecognized).
 - Failed verifications return a structured JSON refusal (`{"error":"<code>"}`) with `WWW-Authenticate: DeviceSignature error="<code>"`.
 
 :::caution

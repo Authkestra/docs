@@ -56,13 +56,13 @@ export const AI_PROMPTS: Record<string, string> = {
     'Implement Time-based One-Time Password (TOTP, RFC 6238) MFA in Authkestra v0.15 (authkestra = "0.15", features = ["totp", "axum", "memory"]). register_totp requires (&Identity, &ReproofRequirement) to ensure the user re-authenticates before enrolling an authenticator app. Validate 6-digit codes with atomic replay protection via CredentialStore::claim_totp_step and configurable drift windows. Refer to https://docs.authkestra.com/llms-full.txt.',
 
   'providers/magic-link':
-    'Implement passwordless email magic link authentication using Authkestra v0.15 (authkestra = "0.15", features = ["engine", "memory", "axum"]). Use MagicLinkAuthMethod backed by a store implementing AtomicConsume to ensure single-use consumption and eliminate TOCTOU race conditions when links are scanned by email security filters. Refer to https://docs.authkestra.com/llms-full.txt.',
+    'Implement passwordless email magic link authentication using Authkestra v0.15 (authkestra = "0.15", features = ["magic-link", "memory", "axum"]). Use MagicLinkAuthMethod backed by a store implementing AtomicConsume to ensure single-use consumption and eliminate TOCTOU race conditions when links are scanned by email security filters. Refer to https://docs.authkestra.com/llms-full.txt.',
 
   'providers/otp':
-    'Implement email or SMS one-time passcode (OTP) authentication in Authkestra v0.15 (authkestra = "0.15", features = ["engine", "memory", "axum"]). Use OtpAuthMethod backed by a KvStore implementing AtomicDecrement to enforce strict per-challenge attempt limits, fail closed on exhaustion, and enforce short expiration TTLs. Refer to https://docs.authkestra.com/llms-full.txt.',
+    'Implement email or SMS one-time passcode (OTP) authentication in Authkestra v0.15 (authkestra = "0.15", features = ["otp", "memory", "axum"]). Use OtpAuthMethod backed by a KvStore implementing AtomicDecrement to enforce strict per-challenge attempt limits, fail closed on exhaustion, and enforce short expiration TTLs. Refer to https://docs.authkestra.com/llms-full.txt.',
 
   'providers/recovery-codes':
-    'Implement backup recovery code authentication in Authkestra v0.15 (authkestra = "0.15", features = ["engine", "memory", "axum"]). Use RecoveryCodeAuthMethod with Argon2id cryptographic hashing. Generating recovery codes requires (&Identity, &ReproofRequirement), and consuming a code requires AtomicConsume to guarantee single-use invalidation. Refer to https://docs.authkestra.com/llms-full.txt.',
+    'Implement backup recovery code authentication in Authkestra v0.15 (authkestra = "0.15", features = ["recovery-codes", "memory", "axum"]). Use RecoveryCodeAuthMethod with Argon2id cryptographic hashing. Generating recovery codes requires (&Identity, &ReproofRequirement), and consuming a code requires AtomicConsume to guarantee single-use invalidation. Refer to https://docs.authkestra.com/llms-full.txt.',
 
   'providers/bot-protection':
     'Integrate CAPTCHA and bot protection into authentication flows using Authkestra v0.15 (authkestra = "0.15", features = ["engine", "captcha", "axum"]). Use TurnstileVerifier or HCaptchaVerifier to validate client challenge tokens fail-closed before processing credential submission or triggering expensive password hashing. Refer to https://docs.authkestra.com/llms-full.txt.',
