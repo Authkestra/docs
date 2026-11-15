@@ -11,7 +11,7 @@ Authkestra includes built-in generic KV stores (`memory` and `redis`), forwarded
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "redis"] }
+authkestra = { version = "0.15", features = ["axum", "redis"] }
 ```
 
 ### 1. Memory Store (`memory`)

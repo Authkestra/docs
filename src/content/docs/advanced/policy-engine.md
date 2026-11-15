@@ -17,9 +17,11 @@ review, diff and reload, instead of in `if role == "admin"` branches scattered a
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["policy"] }
-# or the crate on its own:
-authkestra-policy = "0.13"
+authkestra = { version = "0.15", features = ["policy"] }
+# Required when wiring PolicyGuard in Axum / Actix route handlers:
+authkestra-resource = { version = "0.15", features = ["policy"] }
+# or the policy crate on its own:
+authkestra-policy = "0.15"
 ```
 
 ## The one rule: the engine never touches your database
@@ -171,24 +173,51 @@ caveats.
 
 ### Axum & Actix Route Protection
 
-When the `policy` feature is enabled on `authkestra-axum` or `authkestra-actix`, wrap your routes with `PolicyGuard`:
+When the `policy` feature is enabled on `authkestra-axum` or `authkestra-actix`, store `Arc<PolicyGuard>` in application state and pull it into handlers via `AuthPolicyGuard`. `PolicyGuard::new(engine)` uses `DefaultPrincipalMapper`, formatting principals as `User::"{provider}:{external_id}"` (percent-encoding `%` and `:` to prevent delimiter collisions):
 
 ```rust
 use std::sync::Arc;
-use authkestra::policy::CedarPolicyEngine;
-use authkestra::axum::PolicyGuard;
-use axum::{routing::get, Router};
+use authkestra::axum::{policy::AuthPolicyGuard, AuthSession, AxumState};
+use authkestra::core::AkWebAppEngine;
+use authkestra::policy::PolicyEngine;
+use authkestra_resource::PolicyGuard;
+use axum::{extract::Path, routing::get, Router};
+
+#[derive(Clone, AxumState)]
+struct AppState {
+    #[authkestra(engine)]
+    auth: AkWebAppEngine,
+    #[authkestra(store)]
+    policy_guard: Arc<PolicyGuard>,
+}
 
 let policy_engine = Arc::new(
-    CedarPolicyEngine::builder()
+    PolicyEngine::builder()
         .policies(policy_source)
         .loader(loader)
         .build()?,
 );
+let policy_guard = Arc::new(PolicyGuard::new(policy_engine));
+
+async fn get_document(
+    Path(id): Path<String>,
+    AuthSession(session): AuthSession,
+    AuthPolicyGuard(guard): AuthPolicyGuard,
+) -> Result<&'static str, axum::http::StatusCode> {
+    let decision = guard
+        .authorize(&session.identity, "read", &format!(r#"Doc::"{id}""#), None)
+        .await
+        .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
+    if decision.is_allowed() {
+        Ok("ok")
+    } else {
+        Err(axum::http::StatusCode::FORBIDDEN)
+    }
+}
 
 let app = Router::new()
     .route("/api/documents/:id", get(get_document))
-    .layer(PolicyGuard::new(policy_engine.clone()));
+    .with_state(AppState { auth, policy_guard });
 ```
 
 ### Resource Server & MCP Tool Enforcement

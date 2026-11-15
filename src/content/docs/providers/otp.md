@@ -11,7 +11,7 @@ To use OTP, enable the `otp` feature in your `Cargo.toml`. The example below als
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.13", features = ["otp", "memory"] }
+authkestra-engine = { version = "0.15", features = ["otp", "memory"] }
 ```
 
 ## Registering the Method
