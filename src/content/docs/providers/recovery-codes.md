@@ -11,7 +11,7 @@ To use recovery codes, enable the `recovery-codes` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.13", features = ["recovery-codes"] }
+authkestra-engine = { version = "0.15", features = ["recovery-codes"] }
 ```
 
 ## Configuration

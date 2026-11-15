@@ -18,35 +18,30 @@ Add the `authkestra-devsig` crate to your dependencies:
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "devsig"] }
+authkestra = { version = "0.15", features = ["axum", "devsig"] }
 # Or with Actix:
-# authkestra = { version = "0.13", features = ["actix", "devsig"] }
+# authkestra = { version = "0.15", features = ["actix", "devsig"] }
 ```
 
 ## How to use `authkestra-devsig`
 
 The easiest way to use `authkestra-devsig` is via the official web framework integrations (`authkestra-axum` and `authkestra-actix`). These integrations provide ready-to-use middleware that intercepts requests, buffers the body to compute the required `bdh` (body digest hash), and verifies the signatures before your route handlers are ever executed.
 
-### 1. Building the Verifier State
+### 1. Building the Verifier State (Profile v1)
 
-To start, construct the `DevSig` configuration state using the unified typestate builder. You will need a `VerifierConfig`, an `IssuerJwks` (a JWKS cache of the issuers trusted to mint attestations), and a `ReplayStore` (to protect against replay attacks).
+To start, construct the `DevSig` configuration state using the unified typestate builder. `VerifierConfig::profile_v1` configures the standard device-signature profile v1 defaults (`ES256`/`EdDSA`, `RECOMMENDED_CLOCK_SKEW`, `MAX_SIGNATURE_LIFETIME`), alongside an `IssuerJwks` cache and a `ReplayStore`:
 
 ```rust
 use authkestra_devsig::{DevSig, InMemoryReplayStore, IssuerJwks, ReplayStore, VerifierConfig};
 use jsonwebtoken::Algorithm;
 use std::sync::Arc;
-use std::time::Duration;
 
-// `VerifierConfig` is `#[non_exhaustive]`, so build it with `new(...)` rather than a
-// struct literal. Arguments, in order:
-//   trusted_issuers, allowed_algs, max_clock_skew, max_signature_lifetime, audience
-let config = VerifierConfig::new(
+// Profile v1 constructor (trusted_issuers, audience); customize device signing algs via `.with_device_algs(...)`.
+let config = VerifierConfig::profile_v1(
     ["https://op.example.test"],
-    [Algorithm::ES256, Algorithm::EdDSA],
-    Duration::from_secs(5),
-    Duration::from_secs(60),
     "https://api.example.test",
-);
+)
+.with_device_algs([Algorithm::EdDSA, Algorithm::ES256]);
 
 // The JWKS cache does no network I/O of its own — populate it with
 // `jwks.insert(issuer, kid, jwk).await` from wherever you fetch and refresh keys.
@@ -60,8 +55,13 @@ let devsig = DevSig::builder()
     .build();
 ```
 
+Profile v1 enforces strict request binding and uniform refusals:
+- `qsh` and `bdh` claims must be present when the request has a query string or body, and omitted when absent.
+- The attestation `att` claim carries `status` and an optional `KeyRole` (`KeyRole::Ambient` or `KeyRole::UserPresent`) surfaced on `DeviceIdentity.role`.
+- Failed verifications return a structured JSON refusal (`{"error":"<code>"}`) with `WWW-Authenticate: DeviceSignature error="<code>"`.
+
 :::caution
-`allowed_algs` is asymmetric-only. `VerifierConfig::new` silently drops any HMAC algorithm you
+`allowed_algs` and `device_algs` are asymmetric-only. `VerifierConfig` silently drops any HMAC algorithm you
 pass, and `verify()` rejects the whole HMAC family regardless — the device's private key never
 leaves the device, so there is no symmetric secret a verifier could legitimately share.
 :::

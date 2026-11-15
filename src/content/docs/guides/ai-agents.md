@@ -29,14 +29,15 @@ Install the official [Authkestra skill pack](https://github.com/Authkestra/skill
 
 | Skill | What it teaches your coding agent |
 | --- | --- |
-| `authkestra-quickstart` | End-to-end Axum/Actix setup, TLS backend selection, typestate builder, and extractor wiring (`v0.13`). |
+| `authkestra-quickstart` | End-to-end Axum/Actix setup, TLS backend selection, typestate builder, and extractor wiring (`v0.15`). |
 | `authkestra-features` | Diagnosing missing Cargo feature flags vs. unmet typestate prerequisites. |
 | `authkestra-store` | Implementing `KvStore`, `AtomicConsume`, `AtomicDecrement`, `CredentialStore`, and `OpStore`, validated with `authkestra-store-testsuite`. |
 | `authkestra-social-login` | GitHub/Google/Discord OAuth2, OIDC discovery caching, and stateless encrypted-cookie handshakes. |
-| `authkestra-op` | Running an embedded OpenID Provider: PKCE, DPoP, `private_key_jwt`, Device Flow, and RFC 8693 Token Exchange. |
-| `authkestra-resource-server` | Protecting APIs and MCP servers with `Guard`, multi-issuer JWKS, DPoP, and mTLS. |
-| `authkestra-mfa` | Passkeys (WebAuthn), TOTP, Magic Links, OTP, Recovery Codes, `ReproofRequirement`, and `authkestra-devsig`. |
-| `authkestra-upgrade` | Migrating from pre-RFC-001 crates (`authkestra-core`, `authkestra-flow`, `authkestra-session`, `authkestra-token`) and upgrading to `0.13` `ReproofRequirement` signatures. |
+| `authkestra-op` | Running an embedded OpenID Provider: PKCE, DPoP (`DpopNonces`), `private_key_jwt`, Device Flow, and RFC 8693 Token Exchange. |
+| `authkestra-resource-server` | Protecting APIs and MCP servers with `Guard`, multi-issuer JWKS, DPoP, mTLS, and RFC 9470 `StepUpRequirement`. |
+| `authkestra-mfa` | Passkeys (WebAuthn), TOTP (`claim_totp_step`), Magic Links, OTP, Recovery Codes, `ReproofRequirement`, and `authkestra-devsig` profile v1. |
+| `authkestra-mcp` | Embedded MCP server security tiers, JCS parameter binding, human step-up approval, and `EncryptedKvTokenVault`. |
+| `authkestra-upgrade` | Migrating from pre-RFC-001 crates (`authkestra-core`, `authkestra-flow`, `authkestra-session`, `authkestra-token`) and upgrading to `0.15` APIs. |
 | `authkestra-troubleshoot` | Resolving `rustls` CryptoProvider panics, cross-site OAuth cookie drops, and clock skew. |
 
 ---
@@ -47,11 +48,11 @@ Enable the `mcp` feature on the `authkestra` facade crate (or depend on `authkes
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "mcp", "memory"] }
+authkestra = { version = "0.15", features = ["axum", "mcp", "memory"] }
 ```
 
 ### Three Composable Security Tiers (`McpSecurityTier`)
-Register tools on `McpRouter::builder()` with per-tool security policies:
+Register tools on `McpRouter::builder()` with per-tool security policies (unverified identity headers are rejected by default via `allow_unverified_identity_header(false)`):
 - **`McpSecurityTier::Public`**: Callable without authentication (or with optional caller identity).
 - **`McpSecurityTier::Scoped { required_scopes }`**: Validates Bearer or DPoP-bound tokens via `authkestra-resource`, returning RFC 9728 `WWW-Authenticate: Bearer resource_metadata=".../.well-known/oauth-protected-resource"` on `401 Unauthorized` and `insufficient_scope` on `403 Forbidden`.
 - **`McpSecurityTier::HumanApproved { required_scopes, reproof, approval_ttl_secs }`**: Requires both scope validation and a single-use cryptographic step-up human approval bound to the exact tool name and canonicalized arguments.

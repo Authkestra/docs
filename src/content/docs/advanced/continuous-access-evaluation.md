@@ -41,9 +41,9 @@ side of that exchange.
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["ssf", "axum", "memory"] }
+authkestra = { version = "0.15", features = ["ssf", "axum", "memory"] }
 # or crate directly:
-authkestra-ssf = "0.13"
+authkestra-ssf = "0.15"
 jsonwebtoken = { version = "11", features = ["rust_crypto"] }
 ```
 
@@ -76,21 +76,21 @@ let receiver = PushReceiver::new(Arc::new(verifier))
 In Axum, mount the standard push receiver endpoints (`POST /.well-known/ssf/events` and `POST /ssf/events`):
 
 ```rust
-use authkestra_axum::ssf::ssf_routes;
+use authkestra_axum::ssf::ssf_axum_router;
 use axum::Router;
 
-let app = Router::new()
-    .merge(ssf_routes(Arc::new(receiver)));
+let app: Router = Router::new()
+    .merge(ssf_axum_router(Arc::new(receiver)));
 ```
 
 In Actix-web:
 
 ```rust
-use authkestra_actix::ssf::configure_ssf;
-use actix_web::{web, App};
+use authkestra_actix::ssf::ssf_actix_scope;
+use actix_web::App;
 
 App::new()
-    .configure(|cfg| configure_ssf(cfg, Arc::new(receiver)));
+    .service(ssf_actix_scope(Arc::new(receiver)));
 ```
 
 If you prefer custom endpoint handling, `PushReceiver::receive` is framework-agnostic:

@@ -11,7 +11,7 @@ To use magic links, enable the `magic-link` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-authkestra-engine = { version = "0.13", features = ["magic-link"] }
+authkestra-engine = { version = "0.15", features = ["magic-link"] }
 ```
 
 ## Configuration

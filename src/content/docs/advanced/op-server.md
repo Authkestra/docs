@@ -15,9 +15,9 @@ Because OP Servers are an advanced use case, the OP logic is not included in the
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "op"] }
+authkestra = { version = "0.15", features = ["axum", "op"] }
 # Or if using Actix:
-# authkestra = { version = "0.13", features = ["actix", "op"] }
+# authkestra = { version = "0.15", features = ["actix", "op"] }
 ```
 
 ## The OpStore Interface
@@ -69,10 +69,7 @@ let op_store: Arc<dyn authkestra_op::CloneableOpStore> = Arc::new(CompositeOpSto
 A handler clones the store once per request and drops the clone when the request ends. `Clone` here has to mean "a new handle onto the same underlying state" — never "an independent copy of the data". A naive `#[derive(Clone)]` over a plain `HashMap` field, for example, compiles and satisfies `CloneableOpStore`, but every write a handler makes disappears with that request's clone: the code `/authorize` stores would never be visible to the following `/token` exchange, which would always fail with `invalid_grant` — no compile error, no log, no failing test. Put mutable in-memory state behind `Arc<Mutex<_>>`/`Arc<RwLock<_>>` (as `authkestra_op::MemoryClientAssertionStore` and `authkestra_engine::store::memory::MemoryStore` do), or use a connection-pool handle that is already cheap-clone-shares-state by construction.
 :::
 
-`CompositeOpStore` carries two further, optional slots for the replay guards above — supply them
-with `.with_client_assertion_store(...)` and `.with_dpop_replay_store(...)`. Left unset they resolve
-to `NoClientAssertionStore` / `NoDpopReplayStore`, which are the fail-closed defaults described in
-the caution box.
+`CompositeOpStore` carries optional slots for replay guards and rotating DPoP nonces: supply `.with_client_assertion_store(...)`, `.with_dpop_replay_store(...)`, and `.with_dpop_nonces(...)` (`DpopNonces`). Left unset, the replay guards resolve to `NoClientAssertionStore` / `NoDpopReplayStore`, which are the fail-closed defaults described in the caution box. Client registrations also support `allowed_audiences` for explicit audience scoping (`resource` / RFC 8707) and custom `amr`/`acr` claims via `amr_acr_extra_claims`.
 
 :::tip[Overriding Refresh Token Logic]
 The `OpStore` interface allows overriding `handle_refresh_token` for custom refresh token rotation or revocation policies. When the `openid` scope is requested during the refresh flow, Authkestra automatically issues an updated `id_token` alongside the new access token.

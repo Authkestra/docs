@@ -11,7 +11,7 @@ To use TOTP, enable the `totp` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["totp"] }
+authkestra = { version = "0.15", features = ["totp"] }
 ```
 
 ## Configuration
@@ -79,4 +79,4 @@ let result = engine.authenticate(AuthInput::MfaChallenge {
 
 ### Built-in Replay Protection
 
-Authkestra strictly adheres to [RFC 6238](https://datatracker.ietf.org/doc/html/rfc6238). It automatically tracks the highest `last_used_step` in the credential store, preventing the exact same code from being submitted more than once within the validity window. This completely mitigates replay attacks!
+Authkestra strictly adheres to [RFC 6238](https://datatracker.ietf.org/doc/html/rfc6238). It atomically claims the active time step via `CredentialStore::claim_totp_step`, ensuring the exact same code cannot be accepted twice under concurrent requests or anywhere within the drift window.

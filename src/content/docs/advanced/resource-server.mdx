@@ -18,9 +18,9 @@ Like the OP Server, the Resource Server is an advanced component and is not incl
 
 ```toml
 [dependencies]
-authkestra = { version = "0.13", features = ["axum", "resource"] }
+authkestra = { version = "0.15", features = ["axum", "resource"] }
 # Or if using Actix:
-# authkestra = { version = "0.13", features = ["actix", "resource"] }
+# authkestra = { version = "0.15", features = ["actix", "resource"] }
 ```
 
 ### TLS Backend Selection
@@ -29,7 +29,7 @@ Outbound HTTP requests for JWKS discovery require a TLS backend. Authkestra enab
 
 ```toml
 [dependencies]
-authkestra-resource = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
+authkestra-resource = { version = "0.15", default-features = false, features = ["rustls-no-provider"] }
 ```
 
 ## Building with Authkestra Guard
@@ -122,8 +122,14 @@ let config = ValidationConfig::builder()
 
 let strategy = JwtStrategy::<UserIdentity>::new(config)
     // Required: the default `NoDpopReplayStore` refuses every DPoP-bound token.
-    .with_dpop_replay_store(Arc::new(my_replay_store));
+    .with_dpop_replay_store(Arc::new(my_replay_store))
+    // Optional: enforce rotating DPoP nonces (RFC 9449 §8/§9)
+    .with_dpop_nonces(dpop_nonces)
+    // Optional: enforce RFC 9470 step-up auth (`acr_values` / `max_age`)
+    .with_step_up(StepUpRequirement::new().max_age(300));
 ```
+
+Failed DPoP nonce checks or step-up requirements produce structured `ResourceRefusal` challenges (`DPoP-Nonce` header on `use_dpop_nonce` or `WWW-Authenticate` with `insufficient_user_authentication` per RFC 9470) via `resource_refusal_response`.
 
 :::caution[`require_dpop` without a replay store rejects everything]
 `JwtStrategy` starts with the fail-closed `NoDpopReplayStore`, which refuses every proof. That is
